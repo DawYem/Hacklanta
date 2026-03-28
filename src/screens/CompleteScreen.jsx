@@ -10,9 +10,59 @@ import Confetti from '../components/Confetti';
 // 10 square segments — each represents 0.5h, so 5h max = all filled
 const TOTAL_SEGMENTS = 10;
 
+/** Full victory fanfare (~2.5 s) using Web Audio API — no files needed. */
+function playVictoryFanfare() {
+  try {
+    const AudioCtx = window.AudioContext || window['webkitAudioContext'];
+    const ctx = new AudioCtx();
+
+    // [freq (Hz), start (s), duration (s)]
+    // Retro RPG victory fanfare: intro run → held chord → triumphant finish
+    const score = [
+      // quick ascending run
+      [392.00, 0.00, 0.09],  // G4
+      [523.25, 0.10, 0.09],  // C5
+      [659.25, 0.20, 0.09],  // E5
+      [783.99, 0.30, 0.09],  // G5
+      // short pause then punchy chords
+      [523.25, 0.48, 0.12],  // C5
+      [659.25, 0.48, 0.12],  // E5 (harmony)
+      [783.99, 0.62, 0.12],  // G5
+      [1046.5, 0.62, 0.12],  // C6 (harmony)
+      // triumphant ascending finish
+      [783.99, 0.82, 0.10],  // G5
+      [880.00, 0.94, 0.10],  // A5
+      [987.77, 1.06, 0.10],  // B5
+      [1046.5, 1.18, 0.22],  // C6
+      // final big chord held
+      [523.25, 1.48, 0.55],  // C5
+      [659.25, 1.48, 0.55],  // E5
+      [783.99, 1.48, 0.55],  // G5
+      [1046.5, 1.48, 0.55],  // C6
+    ];
+
+    score.forEach(([freq, t, dur]) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      const t0 = ctx.currentTime + t;
+      gain.gain.setValueAtTime(0.13, t0);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+      osc.start(t0);
+      osc.stop(t0 + dur + 0.05);
+    });
+  } catch {
+    // audio not supported — fail silently
+  }
+}
+
 function ScreenTimeBar({ hours = 2 }) {
   const target = Math.round(Math.min(Math.max(hours, 0), 5) * 2); // 0–10
   const [filled, setFilled] = useState(0);
+  const [fanfarePlayed, setFanfarePlayed] = useState(false);
 
   useEffect(() => {
     if (target === 0) return;
@@ -28,10 +78,30 @@ function ScreenTimeBar({ hours = 2 }) {
     return () => clearTimeout(start);
   }, [target]);
 
+  // Fire fanfare exactly once when bar finishes filling
+  useEffect(() => {
+    if (filled >= target && target > 0 && !fanfarePlayed) {
+      setFanfarePlayed(true);
+      playVictoryFanfare();
+    }
+  }, [filled, target, fanfarePlayed]);
+
   const done = filled >= target && target > 0;
 
   return (
-    <PixelBox color="var(--yellow)" style={{ width: '100%', textAlign: 'left' }}>
+    <PixelBox color="var(--yellow)" style={{ width: '100%', textAlign: 'left', position: 'relative', overflow: 'hidden' }}>
+      <style>{`
+        @keyframes popIn {
+          0%   { opacity: 0; transform: scale(0.88); }
+          65%  { transform: scale(1.03); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.6; }
+        }
+      `}</style>
+
       {/* Label */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Zap size={12} color="var(--yellow)" fill="var(--yellow)" />
@@ -42,24 +112,20 @@ function ScreenTimeBar({ hours = 2 }) {
 
       {/* Lightning bolt + pixel block bar */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {/* Bold lightning bolt */}
         <div style={{ flexShrink: 0, filter: 'drop-shadow(0 0 5px var(--yellow))' }}>
           <Zap size={34} color="var(--yellow)" fill="var(--yellow)" />
         </div>
 
-        {/* Pixel bar: thick dark outer border, small gaps between square blocks */}
-        <div
-          style={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'stretch',
-            gap: 3,
-            padding: 4,
-            background: '#111',
-            border: '2px solid #111',
-            boxShadow: '2px 2px 0 #000',
-          }}
-        >
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'stretch',
+          gap: 3,
+          padding: 4,
+          background: '#111',
+          border: '2px solid #111',
+          boxShadow: '2px 2px 0 #000',
+        }}>
           {Array.from({ length: TOTAL_SEGMENTS }).map((_, i) => (
             <div
               key={i}
@@ -77,15 +143,69 @@ function ScreenTimeBar({ hours = 2 }) {
         </div>
       </div>
 
-      {/* Stats + message */}
+      {/* Stats row */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
         <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
-          {done ? 'EVERY HOUR OUTSIDE COUNTS!' : 'REAL-WORLD TIME TODAY'}
+          REAL-WORLD TIME TODAY
         </p>
         <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: done ? 'var(--green)' : 'var(--yellow)', margin: 0, flexShrink: 0, marginLeft: 8 }}>
           {(filled / 2).toFixed(1)}/{5}H
         </p>
       </div>
+
+      {/* Thank-you popup — overlays the card when bar is full */}
+      {done && (
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: 'var(--bg)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 14,
+          padding: '20px 18px',
+          animation: 'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards',
+          textAlign: 'center',
+          borderTop: '4px solid var(--green)',
+        }}>
+          {/* Pulsing stars row */}
+          <div style={{ display: 'flex', gap: 10, animation: 'pulse 1.6s ease-in-out infinite' }}>
+            <Star size={18} color="var(--yellow)" fill="var(--yellow)" />
+            <Star size={22} color="var(--yellow)" fill="var(--yellow)" />
+            <Star size={18} color="var(--yellow)" fill="var(--yellow)" />
+          </div>
+
+          <p style={{
+            fontFamily: "'Press Start 2P', monospace",
+            fontSize: 13,
+            color: 'var(--green)',
+            margin: 0,
+            lineHeight: 1.4,
+            textShadow: '2px 2px 0 rgba(0,0,0,0.4)',
+          }}>
+            THANK YOU,<br />HERO!
+          </p>
+
+          <p style={{
+            fontFamily: "'Press Start 2P', monospace",
+            fontSize: 7,
+            color: 'var(--text)',
+            margin: 0,
+            lineHeight: 2,
+            wordBreak: 'break-word',
+            maxWidth: 320,
+          }}>
+            Every hour you spend outside instead of on a screen helps fight the teen screen time crisis. You made a real difference today!
+          </p>
+
+          <div style={{ display: 'flex', gap: 10, animation: 'pulse 1.6s ease-in-out infinite' }}>
+            <Zap size={16} color="var(--yellow)" fill="var(--yellow)" />
+            <Zap size={16} color="var(--yellow)" fill="var(--yellow)" />
+            <Zap size={16} color="var(--yellow)" fill="var(--yellow)" />
+          </div>
+        </div>
+      )}
     </PixelBox>
   );
 }
