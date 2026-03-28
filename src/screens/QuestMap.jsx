@@ -58,6 +58,7 @@ export default function QuestMap({
   const [navStops, setNavStops] = useState(null);
   const [proximity, setProximity] = useState(null);
 
+
   const completedCount = stops.filter(s => s.completed).length;
   const hpPercent = stops.length ? Math.round((completedCount / stops.length) * 100) : 0;
   const allDone = stops.length > 0 && completedCount === stops.length;

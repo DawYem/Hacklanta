@@ -1,6 +1,23 @@
 import { useMemo, useCallback, useState, useEffect, useRef } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, Polyline } from '@react-google-maps/api';
 import { stopsFingerprint } from '../lib/maps';
+import { useTheme } from '../context/theme-context';
+
+const MAP_STYLES_DARK = [
+  { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1a1a' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8a8a8a' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a2a2a' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1f0d' }] },
+];
+
+const MAP_STYLES_LIGHT = [
+  { elementType: 'geometry', stylers: [{ color: '#f0f0f0' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#f0f0f0' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#444444' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#d8d8e8' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#b0c8e0' }] },
+];
 
 /** Large, responsive map — README: mobile-friendly, city-as-playground */
 const containerStyle = {
@@ -39,7 +56,7 @@ function MapProblemPanel({ title, detail, hint }) {
     <div
       style={{
         minHeight: containerStyle.height,
-        background: 'linear-gradient(180deg, rgba(232, 83, 74, 0.08), rgba(255,255,255,0.02))',
+        background: 'var(--bg2)',
         border: '2px solid var(--red, #e8534a)',
         borderRadius: 18,
         padding: 20,
@@ -110,7 +127,7 @@ function NoKeyPlaceholder() {
     <div
       style={{
         height: containerStyle.height,
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+        background: 'var(--bg2)',
         border: '2px dashed var(--muted)',
         borderRadius: 18,
         display: 'flex',
@@ -146,6 +163,9 @@ function QuestGoogleMapInner({
   onStopsResolved,
   onProximityChange,
 }) {
+  const { theme } = useTheme();
+  const mapStyles = theme === 'light' ? MAP_STYLES_LIGHT : MAP_STYLES_DARK;
+
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'hacklanta-google-maps',
     version: 'weekly',
@@ -519,7 +539,7 @@ function QuestGoogleMapInner({
       <div
         style={{
           minHeight: containerStyle.height,
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+          background: 'var(--bg2)',
           border: '2px solid var(--muted)',
           borderRadius: 18,
           display: 'flex',
@@ -578,28 +598,14 @@ function QuestGoogleMapInner({
           mapTypeControl: false,
           streetViewControl: false,
           fullscreenControl: false,
-          styles: [
-            { elementType: 'geometry', stylers: [{ color: '#1a1a1a' }] },
-            { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1a1a' }] },
-            { elementType: 'labels.text.fill', stylers: [{ color: '#8a8a8a' }] },
-            {
-              featureType: 'road',
-              elementType: 'geometry',
-              stylers: [{ color: '#2a2a2a' }],
-            },
-            {
-              featureType: 'water',
-              elementType: 'geometry',
-              stylers: [{ color: '#0d1f0d' }],
-            },
-          ],
+          styles: mapStyles,
         }}
       >
         {geoDone && orderedPath.length >= 2 && (
           <Polyline
             path={orderedPath}
             options={{
-              strokeColor: '#2a2a2a',
+              strokeColor: theme === 'light' ? '#c0c0d8' : '#2a2a2a',
               strokeOpacity: 0.95,
               strokeWeight: 4,
               zIndex: 1,
@@ -648,7 +654,7 @@ function QuestGoogleMapInner({
                 zIndex: 500,
                 label: {
                   text: 'YOU',
-                  color: '#ffffff',
+                  color: theme === 'light' ? '#0d0d1a' : '#ffffff',
                   fontSize: '9px',
                   fontWeight: 'bold',
                 },
@@ -674,7 +680,7 @@ function QuestGoogleMapInner({
                   title: stop.placesName || stop.place,
                   label: {
                     text: String(stop.id),
-                    color: '#ffffff',
+                    color: theme === 'light' ? '#0d0d1a' : '#ffffff',
                     fontSize: '11px',
                     fontWeight: 'bold',
                   },
@@ -689,7 +695,7 @@ function QuestGoogleMapInner({
           style={{
             position: 'absolute',
             inset: 0,
-            background: 'rgba(0,0,0,0.72)',
+            background: theme === 'light' ? 'rgba(240,240,255,0.82)' : 'rgba(0,0,0,0.72)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

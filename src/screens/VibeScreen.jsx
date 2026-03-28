@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ChevronRight, Timer, MapPin, Swords } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Timer, MapPin, Swords, Hash } from 'lucide-react';
 import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
@@ -36,16 +36,17 @@ function ProgressBar({ step }) {
   );
 }
 
-export default function VibeScreen({ onBack, onComplete, initialVibe, initialTime, initialLocation }) {
+export default function VibeScreen({ onBack, onComplete, initialVibe, initialTime, initialLocation, initialActivities }) {
   const [step, setStep] = useState(1);
   const [selectedVibe, setSelectedVibe] = useState(initialVibe || null);
   const [time, setTime] = useState(initialTime || 2);
   const [location, setLocation] = useState(initialLocation || '');
+  const [activities, setActivities] = useState(initialActivities || 4);
 
   const handleNext = () => {
     if (step === 1 && selectedVibe) setStep(2);
     else if (step === 2 && location.trim()) {
-      onComplete({ vibe: selectedVibe, time, location });
+      onComplete({ vibe: selectedVibe, time, location, activities });
     }
   };
 
@@ -257,6 +258,44 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
                   >
                     {h}H
                   </span>
+                ))}
+              </div>
+            </PixelBox>
+
+            {/* Activities card */}
+            <PixelBox color="var(--purple)" style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <Hash size={16} color="var(--purple)" />
+                <span
+                  style={{
+                    fontFamily: "'Press Start 2P', monospace",
+                    fontSize: 9,
+                    color: 'var(--purple)',
+                  }}
+                >
+                  NO. OF ACTIVITIES
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+                {[2, 3, 4, 5, 6].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setActivities(n)}
+                    style={{
+                      flex: 1,
+                      padding: '10px 0',
+                      background: activities === n ? 'var(--purple)' : 'var(--bg)',
+                      border: `2px solid ${activities === n ? 'var(--purple)' : '#444'}`,
+                      color: activities === n ? '#fff' : 'var(--muted)',
+                      fontFamily: "'Press Start 2P', monospace",
+                      fontSize: 10,
+                      cursor: 'pointer',
+                      boxShadow: activities === n ? '3px 3px 0 rgba(147,51,234,0.4)' : 'none',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    {n}
+                  </button>
                 ))}
               </div>
             </PixelBox>
