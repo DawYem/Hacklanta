@@ -83,8 +83,10 @@ const vibeConfigs = {
 
 function formatDuration(index, totalStops, hours) {
   const totalMinutes = Math.max(hours, 1) * 60;
-  const avg = Math.max(20, Math.round(totalMinutes / totalStops / 5) * 5);
-  return `${avg + index * 5}m`;
+  const base = Math.max(10, Math.floor(totalMinutes / totalStops / 5) * 5);
+  const assigned = base * totalStops;
+  const extraSlots = Math.round((totalMinutes - assigned) / 5);
+  return `${base + (index < extraSlots ? 5 : 0)}m`;
 }
 
 function buildQuest({ vibe, time, location, activities }) {

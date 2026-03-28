@@ -92,13 +92,14 @@ export async function generateQuestWithGemini({
     ? `Weather hint (mention lightly in summary only if helpful): ${weather.temp}°F, ${weather.description} (${weather.city}).`
     : 'Weather: not available; do not invent numbers.';
 
-  const minutesPerStop = computeDuration(0, totalStops, Number(time) || 2).replace('m', '');
+  const totalMinutes = Math.max(Number(time) || 1, 1) * 60;
+  const minutesPerStop = Math.max(10, Math.floor(totalMinutes / totalStops / 5) * 5);
 
   const prompt = `You design short real-world walking quests (public places, safe, PG, inclusive).
 
 Area / location focus: "${location}"
 Vibe id: ${vibe}
-Time budget: ${time} hours total across ${totalStops} stops (~${minutesPerStop} minutes per stop)
+Time budget: ${time} hours = ${totalMinutes} minutes total, split across ${totalStops} stops (~${minutesPerStop} min each)
 Theme color for all stops (hex): ${themeColor}
 Title style hint: ${vibeTitleHint}
 
@@ -121,6 +122,7 @@ Return ONLY valid JSON (no markdown) with this shape:
 
 Rules:
 - Put exactly ${totalStops} objects in "stops".
+- The durations of all stops MUST sum to exactly ${totalMinutes} minutes. Spread them as evenly as possible (~${minutesPerStop}m each).
 - Each "icon" must be exactly one string from the list above (camelCase).
 - Challenges must not require buying anything expensive, trespassing, or unsafe behavior.`;
 
