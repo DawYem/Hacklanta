@@ -16,38 +16,35 @@ It’s a lack of meaningful engagement.**
 **Quest** is an AI life‑adventure app that transforms your **mood**, **free time**, and **location** into a personalized real‑world mini‑adventure — generated on the fly.
 
 You tell Quest how you feel and how much time you have.  
-Gemini 1.5 Pro acts as an autonomous agent, pulling **live weather** and **Google Places** data to craft a 3–5 stop adventure with fun micro‑challenges at each location.
+Gemini 2.0 Flash acts as an autonomous agent, pulling **Google Places** data to craft a 3–5 stop adventure with fun micro‑challenges at each location.
 
 Quest turns your city into a playground and your mood into a story.
 
 ---
 
 ## 🎮 How It Works  
-1. The user is greeted with a clean, welcoming start screen.  
-2. The user enters their **mood**, **free time**, and **location**.  
-3. Gemini 1.5 Pro uses function calling to fetch:  
+1. The user is greeted with a clean, welcoming start screen.
+2. The user gets to select their avatar.
+3. The user enters their **mood**, **free time**, and **location**.  
+4. Gemini 1.5 Pro uses function calling to fetch:  
    - Real‑time weather  
    - Nearby places  
-4. The agent synthesizes a personalized adventure with:  
+5. The agent synthesizes a personalized adventure with:  
    - 3–5 stops  
    - Mood‑aligned activities  
-   - Weather‑aware adjustments  
    - Creative micro‑challenges  
-5. The React frontend displays the adventure as a clean, scrollable quest timeline.
+6. The React frontend displays the adventure as a clean, scrollable quest timeline.
 
 
 ---
 
-## 🛠️ Main Tech Stack  
--**Frontend:** React 19, Vite, Google Maps (@react-google-maps/api)  
--**Backend:** Node.js, Vercel Serverless Functions  
--**AI:** Google Gemini 2.0 Flash  
--**APIs:** Google Maps (JS + Geocoding), BigDataCloud, ipapi.co, OpenWeatherMap  
--**Deployment:** Vercel (main), Railway (backup) 
-- **Backend:** Node.js  
-- **AI:** Gemini 1.5 Pro (function calling)  
-- **APIs:** Google Places, OpenWeather, JavaScript Maps, 
-- **Output:** Structured JSON adventure plan rendered in UI  
+## 🛠️ Tech Stack  
+**Frontend:** React 19, Vite, Google Maps (@react-google-maps/api)  
+**Backend:** Node.js, Vercel Serverless Functions  
+**AI:** Google Gemini 2.0 Flash  
+**APIs:** Google Maps (JS + Geocoding), BigDataCloud, ipapi.co, OpenWeatherMap  
+**Deployment:** Vercel (main), Railway (backup)  
+**Styling:** Custom CSS (pixel/retro), Press Start 2P font  
 
 ---
 
@@ -58,20 +55,19 @@ We asked ourselves:
 From there, we designed a simple but powerful loop:  
 input → agent → real‑world data → adventure → action.
 
-**In 24 hours, we built:**
+**In 12 hours, we built:**
 - A working AI agent pipeline  
 - Real‑time weather + Places integration  
 - A challenge generator  
 - A clean React interface  
 - A stable end‑to‑end demo flow  
 
-Our focus was on delivering a magical core experience rather than feature bloat.
+Our focus was on crafting a tiny, magical core experience — the kind you’d expect from a cozy retro game, instead of piling on extra features.
 
 ---
 
 ## 🌦️ Key Features  
 - Personalized adventures based on mood, time, and location  
-- Weather‑aware and time‑aware planning  
 - Real‑world stops pulled from Google Places  
 - Creative micro‑challenges at each stop  
 - Simple, mobile‑friendly UI  
