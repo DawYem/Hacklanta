@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ArrowLeft,
+  Camera,
   CheckCircle,
   Cloud,
   ExternalLink,
@@ -19,6 +20,15 @@ import QuestGoogleMap, { ARRIVAL_RADIUS_METERS } from '../components/QuestGoogle
 import { openGoogleMapsPlace, openGoogleMapsRoute } from '../lib/maps';
 
 const CONTENT_MAX = 980;
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Unable to read photo.'));
+    reader.readAsDataURL(file);
+  });
+}
 
 function panelLabel(text, color = 'var(--muted)') {
   return {
@@ -57,6 +67,10 @@ export default function QuestMap({
   const [selected, setSelected] = useState(null);
   const [navStops, setNavStops] = useState(null);
   const [proximity, setProximity] = useState(null);
+  const [photoProofs, setPhotoProofs] = useState({});
+  const [photoError, setPhotoError] = useState('');
+  const [uploadingStopId, setUploadingStopId] = useState(null);
+  const fileInputRef = useRef(null);
 
 
   const completedCount = stops.filter(s => s.completed).length;
@@ -94,8 +108,52 @@ export default function QuestMap({
   const selectedStopResolved = selectedStop
     ? routeStops.find(stop => stop.id === selectedStop.id) || selectedStop
     : null;
+  const selectedPhotoProof = selectedStop ? photoProofs[selectedStop.id] : null;
+  const selectedStopOnSite = Boolean(
+    selectedStop &&
+      proximity?.nearStopId === selectedStop.id &&
+      proximity?.atStop
+  );
 
   const activeStop = firstIncompleteIdx >= 0 ? stops[firstIncompleteIdx] : null;
+
+  const handleOpenPhotoPicker = stopId => {
+    setPhotoError('');
+    setUploadingStopId(stopId);
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoSelected = async event => {
+    const file = event.target.files?.[0];
+    const stopId = uploadingStopId;
+
+    event.target.value = '';
+
+    if (!file || stopId == null) {
+      setUploadingStopId(null);
+      return;
+    }
+
+    try {
+      const previewUrl = await readFileAsDataUrl(file);
+      setPhotoProofs(prev => ({
+        ...prev,
+        [stopId]: {
+          fileName: file.name || 'photo-proof.jpg',
+          previewUrl,
+          capturedAt: new Date().toLocaleTimeString([], {
+            hour: 'numeric',
+            minute: '2-digit',
+          }),
+        },
+      }));
+      setPhotoError('');
+    } catch (error) {
+      setPhotoError(error instanceof Error ? error.message : 'Unable to save photo proof.');
+    } finally {
+      setUploadingStopId(null);
+    }
+  };
 
   return (
     <div
@@ -109,6 +167,14 @@ export default function QuestMap({
     >
       <Stars />
       <ThemeToggle />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handlePhotoSelected}
+        style={{ display: 'none' }}
+      />
 
       <div
         style={{
@@ -445,6 +511,59 @@ export default function QuestMap({
                   ) : null}
 
                   <PixelBtn
+                    color={selectedPhotoProof ? 'var(--blue)' : 'var(--yellow)'}
+                    onClick={() => handleOpenPhotoPicker(selectedStop.id)}
+                    style={{
+                      width: '100%',
+                      justifyContent: 'center',
+                      fontSize: 7,
+                      padding: '10px 12px',
+                      marginBottom: 10,
+                    }}
+                  >
+                    <Camera size={11} />
+                    {selectedPhotoProof ? 'UPDATE PHOTO PROOF' : 'ADD PHOTO PROOF'}
+                  </PixelBtn>
+
+                  {selectedPhotoProof ? (
+                    <div
+                      style={{
+                        marginBottom: 14,
+                        padding: 10,
+                        background: 'var(--bg2)',
+                        border: `2px solid ${selectedStopOnSite ? 'var(--green)' : 'var(--border)'}`,
+                      }}
+                    >
+                      <img
+                        src={selectedPhotoProof.previewUrl}
+                        alt={`Proof for stop ${selectedStop.id}`}
+                        style={{
+                          width: '100%',
+                          height: 120,
+                          objectFit: 'cover',
+                          display: 'block',
+                          marginBottom: 10,
+                          border: '2px solid var(--border)',
+                        }}
+                      />
+                      <p style={{ ...bodyText(selectedStopOnSite ? 'var(--green)' : 'var(--yellow)', 8) }}>
+                        {selectedStopOnSite
+                          ? 'Photo proof captured on site. Demo verification ready.'
+                          : 'Photo proof saved. Move closer to this stop to verify location in the demo.'}
+                      </p>
+                      <p style={{ ...bodyText('var(--muted)', 8), marginTop: 6 }}>
+                        {selectedPhotoProof.fileName} • {selectedPhotoProof.capturedAt}
+                      </p>
+                    </div>
+                  ) : null}
+
+                  {photoError ? (
+                    <p style={{ ...bodyText('var(--red)', 8), marginBottom: 14 }}>
+                      {photoError}
+                    </p>
+                  ) : null}
+
+                  <PixelBtn
                     color="var(--muted)"
                     onClick={() => openGoogleMapsPlace(selectedStopResolved)}
                     style={{
@@ -478,6 +597,11 @@ export default function QuestMap({
                       <>
                         <CheckCircle size={11} />
                         DONE
+                      </>
+                    ) : selectedPhotoProof && selectedStopOnSite ? (
+                      <>
+                        <Camera size={11} />
+                        VERIFY PHOTO & DONE
                       </>
                     ) : proximity?.nearStopId === selectedStop.id && proximity?.atStop ? (
                       <>
