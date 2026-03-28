@@ -45,7 +45,13 @@ function App() {
 
   const handleLoadingDone = quest => {
     setQuestTitle(quest?.title || mockQuest.title);
-    setStops(quest?.stops || withStopIcons(mockQuest.stops));
+    setQuestSummary(quest?.summary ?? '');
+    setQuestWeather(quest?.weather ?? null);
+    const resolved =
+      Array.isArray(quest?.stops) && quest.stops.length > 0
+        ? quest.stops
+        : withStopIcons(mockQuest.stops);
+    setStops(resolved);
     setScreen('map');
   };
 

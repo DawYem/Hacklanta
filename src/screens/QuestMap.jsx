@@ -17,7 +17,9 @@ import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
 import PixelBtn from '../components/PixelBtn';
-import QuestGoogleMap from '../components/QuestGoogleMap';
+import PixelAvatar from '../components/PixelAvatar';
+import QuestGoogleMap, { ARRIVAL_RADIUS_METERS } from '../components/QuestGoogleMap';
+import { openGoogleMapsPlace, openGoogleMapsRoute } from '../lib/maps';
 
 // Base path for SVG nodes (percentages [x, y]); any stop count is sampled along this path
 const BASE_QUEST_PATH = [
@@ -77,9 +79,20 @@ const TREE_POSITIONS = [
   { left: '90%', top: '15%' },
 ];
 
-export default function QuestMap({ title = 'QUEST MAP', stops: initialStops, onBack, onComplete }) {
-  const [stops, setStops] = useState(
-    initialStops.map(s => ({ ...s, completed: false }))
+const CONTENT_MAX = 560;
+
+export default function QuestMap({
+  title = 'QUEST MAP',
+  summary = '',
+  weather = null,
+  searchArea = '',
+  avatar = null,
+  stops: initialStops,
+  onBack,
+  onComplete,
+}) {
+  const [stops, setStops] = useState(() =>
+    (initialStops ?? []).map(s => ({ ...s, completed: false }))
   );
   const [selected, setSelected] = useState(null);
   const [navStops, setNavStops] = useState(null);
