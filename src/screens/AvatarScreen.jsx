@@ -15,7 +15,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
     <div
       style={{
         minHeight: '100vh',
-        background: '#0d0d1a',
+        background: 'var(--bg)',
         position: 'relative',
         overflow: 'hidden',
       }}
@@ -47,7 +47,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              color: '#ffffff',
+              color: 'var(--text)',
               padding: 4,
               display: 'flex',
             }}
@@ -59,7 +59,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
               style={{
                 fontFamily: "'Press Start 2P', monospace",
                 fontSize: 9,
-                color: '#f5c842',
+                color: 'var(--yellow)',
                 margin: '0 0 6px',
                 letterSpacing: '0.1em',
               }}
@@ -70,7 +70,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
               style={{
                 fontFamily: "'Press Start 2P', monospace",
                 fontSize: 18,
-                color: '#ffffff',
+                color: 'var(--text)',
                 margin: 0,
               }}
             >
@@ -95,7 +95,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
             return (
               <PixelBox
                 key={avatar.id}
-                color={isSelected ? avatar.color : '#2a2a3e'}
+                color={isSelected ? avatar.color : 'var(--bg2)'}
                 glow={isSelected}
                 onClick={() => setSelectedId(avatar.id)}
                 style={{ cursor: 'pointer', padding: '12px 8px 10px', textAlign: 'center' }}
@@ -113,7 +113,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                     style={{
                       fontFamily: "'Press Start 2P', monospace",
                       fontSize: 6,
-                      color: isSelected ? '#0d0d1a' : '#444',
+                      color: isSelected ? 'var(--bg)' : 'var(--muted)',
                     }}
                   >
                     {isSelected ? '► SELECTED' : `── ${avatar.id} ──`}
@@ -140,7 +140,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                   style={{
                     fontFamily: "'Press Start 2P', monospace",
                     fontSize: 9,
-                    color: '#ffffff',
+                    color: 'var(--text)',
                     margin: '0 0 4px',
                   }}
                 >
@@ -152,7 +152,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                   style={{
                     fontFamily: "'Press Start 2P', monospace",
                     fontSize: 7,
-                    color: '#666',
+                    color: 'var(--muted)',
                     margin: '0 0 10px',
                   }}
                 >
@@ -163,8 +163,8 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                 <div
                   style={{
                     height: 4,
-                    background: '#1a1a2e',
-                    border: `1px solid ${isSelected ? avatar.color : '#2a2a3e'}`,
+                    background: 'var(--bg2)',
+                    border: `1px solid ${isSelected ? avatar.color : 'var(--bg2)'}`,
                     position: 'relative',
                     overflow: 'hidden',
                   }}
@@ -176,7 +176,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                       top: 0,
                       height: '100%',
                       width: isSelected ? '100%' : '40%',
-                      background: isSelected ? avatar.color : '#333',
+                      background: isSelected ? avatar.color : 'var(--muted)',
                       transition: 'width 0.3s ease',
                     }}
                   />
@@ -189,7 +189,7 @@ export default function AvatarScreen({ onBack, onConfirm }) {
         {/* Confirm button */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
           <PixelBtn
-            color="#f5c842"
+            color="var(--yellow)"
             onClick={selected ? () => onConfirm(selected) : undefined}
             disabled={!selected}
             style={{ fontSize: 11, padding: '14px 32px' }}

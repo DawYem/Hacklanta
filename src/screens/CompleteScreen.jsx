@@ -15,6 +15,12 @@ export default function CompleteScreen({ onRestart, avatar }) {
     return () => clearInterval(id);
   }, []);
 
+  useEffect(() => {
+    const handleKey = () => onRestart();
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onRestart]);
+
   return (
     <div
       style={{
@@ -186,6 +192,7 @@ export default function CompleteScreen({ onRestart, avatar }) {
         </PixelBtn>
 
         <p
+          onClick={onRestart}
           style={{
             fontFamily: "'Press Start 2P', monospace",
             fontSize: 8,
@@ -193,6 +200,7 @@ export default function CompleteScreen({ onRestart, avatar }) {
             margin: 0,
             opacity: blinkOn ? 1 : 0,
             transition: 'opacity 0.1s',
+            cursor: 'pointer',
           }}
         >
           PRESS ANY KEY TO CONTINUE

@@ -16,6 +16,7 @@ function App() {
   const [vibe, setVibe] = useState(null);
   const [time, setTime] = useState(2);
   const [location, setLocation] = useState('');
+  const [activities, setActivities] = useState(4);
   const [stops, setStops] = useState([]);
   const [questTitle, setQuestTitle] = useState('');
   const [questSummary, setQuestSummary] = useState('');
@@ -28,20 +29,21 @@ function App() {
     setScreen('vibe');
   };
 
-  const handleVibeComplete = ({ vibe: v, time: t, location: l }) => {
+  const handleVibeComplete = ({ vibe: v, time: t, location: l, activities: a }) => {
     setVibe(v);
     setTime(t);
     setLocation(l);
+    setActivities(a);
     setScreen('loading');
   };
 
   const handleGenerateQuest = useCallback(async () => {
-    const quest = await generateQuest({ vibe, time, location });
+    const quest = await generateQuest({ vibe, time, location, activities });
     return {
       ...quest,
       stops: withStopIcons(quest.stops),
     };
-  }, [vibe, time, location]);
+  }, [vibe, time, location, activities]);
 
   const handleLoadingDone = quest => {
     setQuestTitle(quest?.title || mockQuest.title);
@@ -63,6 +65,7 @@ function App() {
     setVibe(null);
     setTime(2);
     setLocation('');
+    setActivities(4);
     setStops([]);
     setQuestTitle('');
     setQuestSummary('');
@@ -85,6 +88,7 @@ function App() {
           initialVibe={vibe}
           initialTime={time}
           initialLocation={location}
+          initialActivities={activities}
         />
       )}
       {screen === 'loading' && (

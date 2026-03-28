@@ -35,6 +35,11 @@ const vibeConfigs = {
         place: 'Scenic Detour',
         challenge: 'Take the long way to your next stop and look for one street or mural worth remembering.',
       },
+      {
+        icon: 'trophy',
+        place: 'Hidden Gem Finish',
+        challenge: 'Ask a local for one spot they love that tourists never find.',
+      },
     ],
   },
   bored: {
@@ -66,6 +71,11 @@ const vibeConfigs = {
         icon: 'camera',
         place: 'Photo Spot',
         challenge: 'Capture three images that could pass as a movie trailer storyboard.',
+      },
+      {
+        icon: 'map',
+        place: 'Wandering Finish',
+        challenge: 'Walk one block with no destination and note the first interesting thing you notice.',
       },
     ],
   },
@@ -99,6 +109,11 @@ const vibeConfigs = {
         place: 'Final Viewpoint',
         challenge: 'End with a short voice memo describing the best moment so far.',
       },
+      {
+        icon: 'zap',
+        place: 'Bonus Sprint',
+        challenge: 'Find one spontaneous thing to do that was not on any plan today.',
+      },
     ],
   },
   lazy: {
@@ -130,6 +145,11 @@ const vibeConfigs = {
         icon: 'iceCreamCone',
         place: 'Treat Stop',
         challenge: 'Pick a comfort snack and enjoy it without multitasking.',
+      },
+      {
+        icon: 'moon',
+        place: 'Wind Down Spot',
+        challenge: 'Find somewhere quiet to sit for five minutes and do absolutely nothing.',
       },
     ],
   },
@@ -163,6 +183,11 @@ const vibeConfigs = {
         place: 'Waypoint Finish',
         challenge: 'Pick one next destination for later this week so the momentum lasts.',
       },
+      {
+        icon: 'coffee',
+        place: 'Cool-Down Cafe',
+        challenge: 'Sit, breathe, and write down the one highlight of the route so far.',
+      },
     ],
   },
   happy: {
@@ -194,6 +219,11 @@ const vibeConfigs = {
         icon: 'trophy',
         place: 'Victory Finish',
         challenge: 'Write the headline you would give today if it were a tiny adventure movie.',
+      },
+      {
+        icon: 'star',
+        place: 'Golden Hour Spot',
+        challenge: 'Find the best light in the area and take one photo worth keeping forever.',
       },
     ],
   },
@@ -237,20 +267,14 @@ function readBody(req) {
   });
 }
 
-function pickStops(templates, totalStops) {
-  return templates.slice(0, totalStops);
-}
-
-function getStopCount(time) {
-  if (time >= 5) return 5;
-  if (time >= 3) return 4;
-  return 3;
-}
-
 function formatDuration(index, totalStops, hours) {
   const totalMinutes = Math.max(hours, 1) * 60;
   const avg = Math.max(20, Math.round(totalMinutes / totalStops / 5) * 5);
   return `${avg + index * 5}m`;
+}
+
+function pickStops(templates, totalStops) {
+  return templates.slice(0, totalStops);
 }
 
 async function fetchWeatherForLocation(locationQuery) {
@@ -274,10 +298,10 @@ async function fetchWeatherForLocation(locationQuery) {
   }
 }
 
-function buildQuest({ vibe, time, location }) {
+function buildQuest({ vibe, time, location, activities }) {
   const config = vibeConfigs[vibe] || vibeConfigs.bored;
   const hours = Number(time) || 2;
-  const totalStops = getStopCount(hours);
+  const totalStops = Math.min(Math.max(Number(activities) || 4, 2), config.templates.length);
   const area = (location || 'your area').trim();
 
   const stops = pickStops(config.templates, totalStops).map((template, index) => ({
@@ -328,7 +352,10 @@ const server = http.createServer(async (req, res) => {
       const vibeKey = typeof body.vibe === 'string' ? body.vibe : 'bored';
       const hours = Number(body.time) || 2;
       const config = vibeConfigs[vibeKey] || vibeConfigs.bored;
-      const totalStops = getStopCount(hours);
+      const totalStops = Math.min(
+        Math.max(Number(body.activities) || 4, 2),
+        config.templates.length
+      );
 
       const weather = await fetchWeatherForLocation(location);
 
@@ -348,6 +375,7 @@ const server = http.createServer(async (req, res) => {
           vibe: vibeKey,
           time: body.time,
           location,
+          activities: body.activities,
         });
 
       sendJson(res, 200, { quest: { ...quest, weather } });
