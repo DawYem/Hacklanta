@@ -4,6 +4,7 @@ import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
 import PixelBtn from '../components/PixelBtn';
+import QuestGoogleMap from '../components/QuestGoogleMap';
 
 // Node positions as percentages [x, y]
 const NODE_POSITIONS = [
@@ -52,6 +53,12 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
     const isLocked = idx > firstIncompleteIdx && firstIncompleteIdx !== -1;
     if (isLocked) return;
     setSelected(selected === stop.id ? null : stop.id);
+  };
+
+  const handleMarkerSelect = id => {
+    const idx = stops.findIndex(s => s.id === id);
+    if (idx === -1) return;
+    handleNodeClick(stops[idx], idx);
   };
 
   return (
@@ -196,6 +203,15 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
           minHeight: 520,
         }}
       >
+        <div style={{ marginBottom: 16 }}>
+          <QuestGoogleMap
+            stops={stops}
+            selected={selected}
+            onMarkerSelect={handleMarkerSelect}
+            firstIncompleteIdx={firstIncompleteIdx}
+          />
+        </div>
+
         {/* SVG paths */}
         <svg
           style={{
