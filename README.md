@@ -91,3 +91,51 @@ With more time, we would add:
 ---
 
 ## 📂 Repository Structure  
+
+```
+src/          — React app (screens, map, theme, API client)
+server/       — Quest API (`server/index.js`)
+public/       — Static assets
+.env          — Local secrets (gitignored; copy from `.env.example`)
+```
+
+---
+
+## Running & configuring this repository
+
+The sections above describe the **product vision** (including a Gemini-based agent). **This repo** currently ships a working end-to-end flow with a **Node** quest generator, **Google Maps / Places / Geocoding** on the client, and **optional OpenWeather** on the server when `OPENWEATHER_API_KEY` is set.
+
+### Quick start
+
+```bash
+npm install
+cp .env.example .env
+# Add VITE_MAPS_PLATFORM_API_KEY and optionally OPENWEATHER_API_KEY — see below
+npm run dev:all
+```
+
+Open **http://localhost:5173/** (Vite). The API runs at **http://localhost:5050** (proxied as `/api` in dev).
+
+Or run two terminals: `npm run server` and `npm run dev`.
+
+### Environment variables
+
+| Variable | Where | Purpose |
+|----------|--------|---------|
+| `VITE_MAPS_PLATFORM_API_KEY` | `.env` (client) | **Required** for the map. Enable Maps JavaScript API, Places API, Geocoding API; set HTTP referrer `http://localhost:5173/*`. |
+| `OPENWEATHER_API_KEY` | `.env` (loaded by the server via `dotenv`) | Optional. If set, the quest response includes **live weather** for the location (shown on the map screen). Get a key at [OpenWeather](https://openweathermap.org/api). |
+| `VITE_API_BASE_URL` | `.env` | Optional. Leave empty in dev (Vite proxies `/api` → port 5050). Set in production if the API is on another origin. |
+
+Restart Vite after changing any `VITE_*` variable.
+
+### Implementation notes (current build)
+
+1. **Landing** → **Vibe** (mood + time + location).  
+2. **Loading** — the Node server builds a quest from your inputs.  
+3. **Quest map** — Google Maps shows real places; GPS can highlight when you’re near the next stop; **Navigate** opens Google Maps directions.  
+4. **Complete** — finish all stops to finish the run.
+
+- **Maps:** Google Maps JavaScript API, Places (text search), Geocoding fallback, Geometry (distance for proximity check-in).  
+- **Weather:** OpenWeather current weather API (optional, server-side).  
+
+A future iteration can swap or augment the template generator with **Gemini** and richer agent tooling while keeping the same UI flow.

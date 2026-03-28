@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import http from 'node:http';
 
 const PORT = Number(globalThis.process?.env.PORT) || 5050;
@@ -251,6 +252,27 @@ function formatDuration(index, totalStops, hours) {
   return `${avg + index * 5}m`;
 }
 
+async function fetchWeatherForLocation(locationQuery) {
+  const key = process.env.OPENWEATHER_API_KEY?.trim();
+  if (!key || !locationQuery?.trim()) return null;
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locationQuery.trim())}&appid=${key}&units=imperial`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const w = data.weather?.[0];
+    return {
+      temp: Math.round(data.main?.temp ?? 0),
+      description: w?.description
+        ? w.description.replace(/\b\w/g, c => c.toUpperCase())
+        : '',
+      city: data.name ?? locationQuery,
+    };
+  } catch {
+    return null;
+  }
+}
+
 function buildQuest({ vibe, time, location }) {
   const config = vibeConfigs[vibe] || vibeConfigs.bored;
   const hours = Number(time) || 2;
@@ -308,7 +330,9 @@ const server = http.createServer(async (req, res) => {
         location,
       });
 
-      sendJson(res, 200, { quest });
+      const weather = await fetchWeatherForLocation(location);
+
+      sendJson(res, 200, { quest: { ...quest, weather } });
     } catch (error) {
       sendJson(res, 400, {
         error: error instanceof Error ? error.message : 'Unable to generate quest.',

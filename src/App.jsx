@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { ThemeProvider } from './context/ThemeContext';
 import LandingScreen from './screens/LandingScreen';
 import VibeScreen from './screens/VibeScreen';
@@ -16,6 +16,8 @@ function App() {
   const [location, setLocation] = useState('');
   const [stops, setStops] = useState([]);
   const [questTitle, setQuestTitle] = useState('');
+  const [questSummary, setQuestSummary] = useState('');
+  const [questWeather, setQuestWeather] = useState(null);
 
   const handlePlay = () => setScreen('vibe');
 
@@ -26,13 +28,13 @@ function App() {
     setScreen('loading');
   };
 
-  const handleGenerateQuest = async () => {
+  const handleGenerateQuest = useCallback(async () => {
     const quest = await generateQuest({ vibe, time, location });
     return {
       ...quest,
       stops: withStopIcons(quest.stops),
     };
-  };
+  }, [vibe, time, location]);
 
   const handleLoadingDone = quest => {
     setQuestTitle(quest?.title || mockQuest.title);
@@ -49,6 +51,8 @@ function App() {
     setLocation('');
     setStops([]);
     setQuestTitle('');
+    setQuestSummary('');
+    setQuestWeather(null);
   };
 
   return (
@@ -74,6 +78,9 @@ function App() {
         <QuestMap
           key={`${questTitle}-${location}-${stops.length}`}
           title={questTitle}
+          summary={questSummary}
+          weather={questWeather}
+          searchArea={location}
           stops={stops}
           onBack={() => setScreen('vibe')}
           onComplete={handleMapComplete}
