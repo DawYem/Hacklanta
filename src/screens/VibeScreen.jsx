@@ -44,25 +44,47 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
   const [activities, setActivities] = useState(initialActivities || 4);
   const [locStatus, setLocStatus] = useState('idle'); // 'idle' | 'detecting' | 'detected' | 'denied'
 
-  const detectLocation = () => {
-    if (!('geolocation' in navigator)) { setLocStatus('denied'); return; }
+  const detectLocation = async () => {
     setLocStatus('detecting');
     setLocation('');
-    navigator.geolocation.getCurrentPosition(
-      async ({ coords }) => {
+
+    // Step 1: try browser geolocation
+    if ('geolocation' in navigator) {
+      try {
+        const pos = await new Promise((resolve, reject) =>
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            timeout: 10000,
+            enableHighAccuracy: false,
+          })
+        );
+        const { latitude, longitude } = pos.coords;
+
+        // Step 2: reverse geocode to get city name
         try {
-          const res = await fetch(
-            `https://api.bigdatacloud.net/data/reverse-geocode-localityLanguage?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`
+          const r = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-localityLanguage?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
           );
-          const data = await res.json();
-          const city = data.city || data.locality || data.principalSubdivision || '';
-          if (city) { setLocation(city); setLocStatus('detected'); }
-          else setLocStatus('denied');
-        } catch { setLocStatus('denied'); }
-      },
-      () => setLocStatus('denied'),
-      { timeout: 8000 }
-    );
+          const d = await r.json();
+          const city = d.city || d.locality || d.principalSubdivision || d.countryName || '';
+          if (city) { setLocation(city); setLocStatus('detected'); return; }
+        } catch {}
+
+        // Reverse geocode failed — use raw coordinates (Gemini handles them)
+        setLocation(`${latitude.toFixed(5)},${longitude.toFixed(5)}`);
+        setLocStatus('detected');
+        return;
+      } catch {}
+    }
+
+    // Step 3: IP-based fallback (no permission needed)
+    try {
+      const r = await fetch('https://ipapi.co/json/');
+      const d = await r.json();
+      const city = d.city || d.region || '';
+      if (city) { setLocation(city); setLocStatus('detected'); return; }
+    } catch {}
+
+    setLocStatus('denied');
   };
 
   useEffect(() => {
@@ -357,7 +379,7 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
               <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: 'var(--muted)', margin: '12px 0 0', lineHeight: 1.8 }}>
                 {locStatus === 'detecting' && 'Allow location access in your browser...'}
                 {locStatus === 'detected' && location}
-                {locStatus === 'denied' && 'Location permission denied. Tap RETRY and allow access.'}
+                {locStatus === 'denied' && 'Could not detect location. Tap RETRY to try again.'}
               </p>
             </PixelBox>
 
