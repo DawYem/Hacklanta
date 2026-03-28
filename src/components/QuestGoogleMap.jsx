@@ -5,9 +5,9 @@ import { stopsFingerprint } from '../lib/maps';
 /** Large, responsive map — README: mobile-friendly, city-as-playground */
 const containerStyle = {
   width: '100%',
-  height: 'clamp(440px, 72vh, 920px)',
-  minHeight: 440,
-  borderRadius: 0,
+  height: 'clamp(320px, 54vh, 640px)',
+  minHeight: 320,
+  borderRadius: 18,
 };
 
 const defaultCenter = { lat: 33.775, lng: -84.375 };
@@ -39,8 +39,9 @@ function MapProblemPanel({ title, detail, hint }) {
     <div
       style={{
         minHeight: containerStyle.height,
-        background: 'var(--bg2)',
-        border: '3px solid var(--red, #e8534a)',
+        background: 'linear-gradient(180deg, rgba(232, 83, 74, 0.08), rgba(255,255,255,0.02))',
+        border: '2px solid var(--red, #e8534a)',
+        borderRadius: 18,
         padding: 20,
         display: 'flex',
         flexDirection: 'column',
@@ -109,8 +110,9 @@ function NoKeyPlaceholder() {
     <div
       style={{
         height: containerStyle.height,
-        background: 'var(--bg2)',
-        border: '3px solid var(--muted)',
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+        border: '2px dashed var(--muted)',
+        borderRadius: 18,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -517,8 +519,9 @@ function QuestGoogleMapInner({
       <div
         style={{
           minHeight: containerStyle.height,
-          background: 'var(--bg2)',
-          border: '3px solid var(--muted)',
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02))',
+          border: '2px solid var(--muted)',
+          borderRadius: 18,
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -560,7 +563,7 @@ function QuestGoogleMapInner({
     <div
       style={{
         position: 'relative',
-        border: '3px solid var(--green)',
+        borderRadius: 18,
         overflow: 'hidden',
       }}
     >
