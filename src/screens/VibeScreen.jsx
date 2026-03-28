@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ChevronRight, Timer, MapPin, Swords, Hash, Loader, LocateFixed } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Timer, Swords, Hash, Loader, LocateFixed, AlertCircle } from 'lucide-react';
 import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
@@ -44,10 +44,10 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
   const [activities, setActivities] = useState(initialActivities || 4);
   const [locStatus, setLocStatus] = useState('idle'); // 'idle' | 'detecting' | 'detected' | 'denied'
 
-  useEffect(() => {
-    if (step !== 2 || initialLocation) return;
+  const detectLocation = () => {
     if (!('geolocation' in navigator)) { setLocStatus('denied'); return; }
     setLocStatus('detecting');
+    setLocation('');
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
         try {
@@ -63,7 +63,11 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
       () => setLocStatus('denied'),
       { timeout: 8000 }
     );
-  }, [step, initialLocation]);
+  };
+
+  useEffect(() => {
+    if (step === 2 && !initialLocation) detectLocation();
+  }, [step]);
 
   const handleNext = () => {
     if (step === 1 && selectedVibe) setStep(2);
@@ -325,43 +329,36 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
             </PixelBox>
 
             {/* Location card */}
-            <PixelBox color="var(--blue)" style={{ marginBottom: 32 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                {locStatus === 'detecting' ? (
-                  <Loader size={16} color="var(--blue)" style={{ animation: 'spin 1s linear infinite' }} />
-                ) : locStatus === 'detected' ? (
-                  <LocateFixed size={16} color="var(--green)" />
-                ) : (
-                  <MapPin size={16} color="var(--blue)" />
+            <PixelBox
+              color={locStatus === 'detected' ? 'var(--green)' : locStatus === 'denied' ? 'var(--red)' : 'var(--blue)'}
+              style={{ marginBottom: 32 }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {locStatus === 'detecting' && (
+                    <Loader size={16} color="var(--blue)" style={{ animation: 'spin 1s linear infinite' }} />
+                  )}
+                  {locStatus === 'detected' && <LocateFixed size={16} color="var(--green)" />}
+                  {(locStatus === 'denied' || locStatus === 'idle') && <AlertCircle size={16} color="var(--red)" />}
+                  <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: locStatus === 'detected' ? 'var(--green)' : locStatus === 'denied' ? 'var(--red)' : 'var(--blue)' }}>
+                    {locStatus === 'detecting' ? 'LOCATING...' : locStatus === 'detected' ? 'LOCATION SET' : 'LOCATION NEEDED'}
+                  </span>
+                </div>
+                {locStatus === 'denied' && (
+                  <button
+                    onClick={detectLocation}
+                    style={{ background: 'none', border: '2px solid var(--red)', color: 'var(--red)', fontFamily: "'Press Start 2P', monospace", fontSize: 7, padding: '4px 8px', cursor: 'pointer' }}
+                  >
+                    RETRY
+                  </button>
                 )}
-                <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: 'var(--blue)' }}>
-                  {locStatus === 'detecting' ? 'DETECTING...' : locStatus === 'detected' ? 'LOCATION FOUND' : 'YOUR LOCATION'}
-                </span>
               </div>
 
-              {locStatus === 'detecting' ? (
-                <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: 'var(--muted)', margin: 0 }}>
-                  Getting your location...
-                </p>
-              ) : (
-                <input
-                  type="text"
-                  value={location}
-                  onChange={e => setLocation(e.target.value)}
-                  placeholder="e.g. Downtown Atlanta"
-                  style={{
-                    width: '100%',
-                    background: 'var(--bg)',
-                    border: `2px solid ${locStatus === 'detected' ? 'var(--green)' : 'var(--blue)'}`,
-                    color: 'var(--text)',
-                    fontFamily: "'Press Start 2P', monospace",
-                    fontSize: 9,
-                    padding: '10px 12px',
-                    outline: 'none',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              )}
+              <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: 'var(--muted)', margin: '12px 0 0', lineHeight: 1.8 }}>
+                {locStatus === 'detecting' && 'Allow location access in your browser...'}
+                {locStatus === 'detected' && location}
+                {locStatus === 'denied' && 'Location permission denied. Tap RETRY and allow access.'}
+              </p>
             </PixelBox>
 
             <PixelBtn
