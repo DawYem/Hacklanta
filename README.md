@@ -26,7 +26,7 @@ Quest turns your city into a playground and your mood into a story.
 1. The user is greeted with a clean, welcoming start screen.
 2. The user gets to select their avatar.
 3. The user enters their **mood**, **free time**, and **location**.  
-4. Gemini 1.5 Pro uses function calling to fetch:  
+4. Gemini 2.0 Flash uses function calling to fetch:  
    - Real‑time weather  
    - Nearby places  
 5. The agent synthesizes a personalized adventure with:  
