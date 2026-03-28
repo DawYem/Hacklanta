@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { ArrowLeft, ChevronRight, Timer, MapPin, Swords, Hash } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ArrowLeft, ChevronRight, Timer, MapPin, Swords, Hash, Loader, LocateFixed } from 'lucide-react';
 import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
@@ -42,6 +42,28 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
   const [time, setTime] = useState(initialTime || 2);
   const [location, setLocation] = useState(initialLocation || '');
   const [activities, setActivities] = useState(initialActivities || 4);
+  const [locStatus, setLocStatus] = useState('idle'); // 'idle' | 'detecting' | 'detected' | 'denied'
+
+  useEffect(() => {
+    if (step !== 2 || initialLocation) return;
+    if (!('geolocation' in navigator)) { setLocStatus('denied'); return; }
+    setLocStatus('detecting');
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords }) => {
+        try {
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-localityLanguage?latitude=${coords.latitude}&longitude=${coords.longitude}&localityLanguage=en`
+          );
+          const data = await res.json();
+          const city = data.city || data.locality || data.principalSubdivision || '';
+          if (city) { setLocation(city); setLocStatus('detected'); }
+          else setLocStatus('denied');
+        } catch { setLocStatus('denied'); }
+      },
+      () => setLocStatus('denied'),
+      { timeout: 8000 }
+    );
+  }, [step, initialLocation]);
 
   const handleNext = () => {
     if (step === 1 && selectedVibe) setStep(2);
@@ -305,40 +327,47 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
             {/* Location card */}
             <PixelBox color="var(--blue)" style={{ marginBottom: 32 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <MapPin size={16} color="var(--blue)" />
-                <span
-                  style={{
-                    fontFamily: "'Press Start 2P', monospace",
-                    fontSize: 9,
-                    color: 'var(--blue)',
-                  }}
-                >
-                  YOUR LOCATION
+                {locStatus === 'detecting' ? (
+                  <Loader size={16} color="var(--blue)" style={{ animation: 'spin 1s linear infinite' }} />
+                ) : locStatus === 'detected' ? (
+                  <LocateFixed size={16} color="var(--green)" />
+                ) : (
+                  <MapPin size={16} color="var(--blue)" />
+                )}
+                <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 9, color: 'var(--blue)' }}>
+                  {locStatus === 'detecting' ? 'DETECTING...' : locStatus === 'detected' ? 'LOCATION FOUND' : 'YOUR LOCATION'}
                 </span>
               </div>
-              <input
-                type="text"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-                placeholder="e.g. Downtown Atlanta"
-                style={{
-                  width: '100%',
-                  background: 'var(--bg)',
-                  border: '2px solid var(--blue)',
-                  color: 'var(--text)',
-                  fontFamily: "'Press Start 2P', monospace",
-                  fontSize: 9,
-                  padding: '10px 12px',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
-              />
+
+              {locStatus === 'detecting' ? (
+                <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: 'var(--muted)', margin: 0 }}>
+                  Getting your location...
+                </p>
+              ) : (
+                <input
+                  type="text"
+                  value={location}
+                  onChange={e => setLocation(e.target.value)}
+                  placeholder="e.g. Downtown Atlanta"
+                  style={{
+                    width: '100%',
+                    background: 'var(--bg)',
+                    border: `2px solid ${locStatus === 'detected' ? 'var(--green)' : 'var(--blue)'}`,
+                    color: 'var(--text)',
+                    fontFamily: "'Press Start 2P', monospace",
+                    fontSize: 9,
+                    padding: '10px 12px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              )}
             </PixelBox>
 
             <PixelBtn
               color="var(--red)"
               onClick={handleNext}
-              disabled={!location.trim()}
+              disabled={!location.trim() || locStatus === 'detecting'}
               style={{ width: '100%', justifyContent: 'center' }}
             >
               <Swords size={14} />
