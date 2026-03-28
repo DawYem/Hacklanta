@@ -26,9 +26,17 @@ const ALLOWED_ICONS = new Set([
 
 const ICON_PROMPT_LIST = [...ALLOWED_ICONS].sort().join(', ');
 
-function normalizeStops(raw, totalStops, themeColor, location) {
+/** Mirrors the formatDuration helper in index.js so durations always reflect chosen time. */
+function computeDuration(index, totalStops, hours) {
+  const totalMinutes = Math.max(hours, 1) * 60;
+  const avg = Math.max(20, Math.round(totalMinutes / totalStops / 5) * 5);
+  return `${avg + index * 5}m`;
+}
+
+function normalizeStops(raw, totalStops, themeColor, location, time) {
   const list = Array.isArray(raw) ? raw.slice(0, totalStops) : [];
   const area = (location || 'your area').trim() || 'your area';
+  const hours = Number(time) || 2;
   const out = [];
   for (let i = 0; i < totalStops; i++) {
     const s = list[i] || {};
@@ -45,7 +53,8 @@ function normalizeStops(raw, totalStops, themeColor, location) {
       challenge: String(
         s.challenge || 'Spend a few minutes exploring here and note one detail you would not have noticed at home.'
       ).slice(0, 600),
-      duration: String(s.duration || `${20 + i * 5}m`).slice(0, 20),
+      // Always compute from the user's chosen time so durations are accurate
+      duration: computeDuration(i, totalStops, hours),
       icon,
       color,
     });
@@ -83,11 +92,13 @@ export async function generateQuestWithGemini({
     ? `Weather hint (mention lightly in summary only if helpful): ${weather.temp}°F, ${weather.description} (${weather.city}).`
     : 'Weather: not available; do not invent numbers.';
 
+  const minutesPerStop = computeDuration(0, totalStops, Number(time) || 2).replace('m', '');
+
   const prompt = `You design short real-world walking quests (public places, safe, PG, inclusive).
 
 Area / location focus: "${location}"
 Vibe id: ${vibe}
-Time budget (hours): ${time}
+Time budget: ${time} hours total across ${totalStops} stops (~${minutesPerStop} minutes per stop)
 Theme color for all stops (hex): ${themeColor}
 Title style hint: ${vibeTitleHint}
 
@@ -126,7 +137,7 @@ Rules:
       location: (location || 'your area').trim(),
       vibe: vibe || 'bored',
       time: Number(time) || 2,
-      stops: normalizeStops(parsed.stops, totalStops, themeColor, location),
+      stops: normalizeStops(parsed.stops, totalStops, themeColor, location, time),
     };
   } catch (err) {
     console.error('[Gemini quest]', err);
