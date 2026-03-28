@@ -324,13 +324,18 @@ function buildQuest({ vibe, time, location, activities }) {
 }
 
 const server = http.createServer(async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
   if (!req.url) {
     sendJson(res, 404, { error: 'Not found' });
     return;
   }
 
   if (req.method === 'OPTIONS') {
-    sendJson(res, 204, {});
+    res.writeHead(200);
+    res.end();
     return;
   }
 
