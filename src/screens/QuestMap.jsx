@@ -23,7 +23,7 @@ const CONTENT_MAX = 980;
 function panelLabel(text, color = 'var(--muted)') {
   return {
     fontFamily: "'Press Start 2P', monospace",
-    fontSize: 7,
+    fontSize: 10,
     color,
     letterSpacing: '0.08em',
     textTransform: 'uppercase',
@@ -31,12 +31,12 @@ function panelLabel(text, color = 'var(--muted)') {
   };
 }
 
-function bodyText(color = 'var(--text)', size = 13) {
+function bodyText(color = 'var(--text)', size = 10) {
   return {
-    fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+    fontFamily: "'Press Start 2P', monospace",
     fontSize: size,
     color,
-    lineHeight: 1.5,
+    lineHeight: 1.6,
     margin: 0,
   };
 }
@@ -194,7 +194,7 @@ export default function QuestMap({
             <div
               style={{
                 height: 10,
-                background: 'rgba(255,255,255,0.08)',
+                background: 'var(--bg2)',
                 border: '2px solid var(--bg2)',
                 marginBottom: 12,
                 overflow: 'hidden',
@@ -219,14 +219,14 @@ export default function QuestMap({
             >
               <PixelBox color="var(--bg2)" style={{ padding: '12px 14px', boxShadow: 'none' }}>
                 <p style={panelLabel('Quest Brief', 'var(--yellow)')}>Quest Brief</p>
-                <p style={{ ...bodyText('var(--muted)', 13), marginTop: 10 }}>
+                <p style={{ ...bodyText('var(--muted)', 8), marginTop: 10 }}>
                   {summary.trim() || 'Follow the route, unlock each stop in order, and finish the adventure.'}
                 </p>
               </PixelBox>
 
               <PixelBox color="var(--bg2)" style={{ padding: '12px 14px', boxShadow: 'none' }}>
                 <p style={panelLabel('Quest Area', 'var(--blue)')}>Quest Area</p>
-                <p style={{ ...bodyText('var(--text)', 14), marginTop: 10 }}>
+                <p style={{ ...bodyText('var(--text)', 8), marginTop: 10 }}>
                   {searchArea.trim() || 'Current area'}
                 </p>
               </PixelBox>
@@ -237,10 +237,10 @@ export default function QuestMap({
                     <Cloud size={15} color="var(--blue)" />
                     <p style={panelLabel('Weather', 'var(--blue)')}>Weather</p>
                   </div>
-                  <p style={{ ...bodyText('var(--text)', 14), marginTop: 10 }}>
+                  <p style={{ ...bodyText('var(--text)', 8), marginTop: 10 }}>
                     {weather.city}: {weather.temp}°F
                   </p>
-                  <p style={{ ...bodyText('var(--muted)', 12), marginTop: 6 }}>
+                  <p style={{ ...bodyText('var(--muted)', 8), marginTop: 6 }}>
                     {weather.description}
                   </p>
                 </PixelBox>
@@ -262,7 +262,7 @@ export default function QuestMap({
             style={{
               padding: 0,
               overflow: 'hidden',
-              background: 'rgba(9, 13, 24, 0.92)',
+              background: 'var(--bg)',
             }}
           >
             <div
@@ -272,13 +272,13 @@ export default function QuestMap({
                 justifyContent: 'space-between',
                 gap: 10,
                 padding: '14px 16px',
-                borderBottom: '2px solid rgba(255,255,255,0.08)',
-                background: 'linear-gradient(180deg, rgba(74, 222, 128, 0.12), transparent)',
+                borderBottom: '2px solid var(--border)',
+                background: 'transparent',
               }}
             >
               <div>
                 <p style={panelLabel('Live Map', 'var(--green)')}>Live Map</p>
-                <p style={{ ...bodyText('var(--muted)', 13), marginTop: 6 }}>
+                <p style={{ ...bodyText('var(--muted)', 8), marginTop: 6 }}>
                   Use the map as the route view, then handle stop details from the mission panel.
                 </p>
               </div>
@@ -311,7 +311,7 @@ export default function QuestMap({
             <div
               style={{
                 padding: '12px 16px 16px',
-                borderTop: '2px solid rgba(255,255,255,0.05)',
+                borderTop: '2px solid var(--border)',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
                 gap: 10,
@@ -320,12 +320,12 @@ export default function QuestMap({
               <div
                 style={{
                   padding: '10px 12px',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--bg2)',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <p style={panelLabel('Next Stop', 'var(--yellow)')}>Next Stop</p>
-                <p style={{ ...bodyText('var(--text)', 14), marginTop: 8 }}>
+                <p style={{ ...bodyText('var(--text)', 8), marginTop: 8 }}>
                   {activeStop ? `Stop ${activeStop.id}: ${activeStop.place}` : 'Quest complete'}
                 </p>
               </div>
@@ -333,12 +333,12 @@ export default function QuestMap({
               <div
                 style={{
                   padding: '10px 12px',
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'var(--bg2)',
+                  border: '1px solid var(--border)',
                 }}
               >
                 <p style={panelLabel('Check-In', 'var(--blue)')}>Check-In</p>
-                <p style={{ ...bodyText('var(--text)', 14), marginTop: 8 }}>
+                <p style={{ ...bodyText('var(--text)', 8), marginTop: 8 }}>
                   {proximity?.atStop && proximity.nearStopId != null
                     ? `You are at Stop ${proximity.nearStopId}`
                     : proximity?.nearStopId != null && proximity.meters != null
@@ -376,25 +376,25 @@ export default function QuestMap({
                         alignItems: 'center',
                         justifyContent: 'center',
                         flexShrink: 0,
-                        background: 'rgba(255,255,255,0.03)',
+                        background: 'var(--bg2)',
                       }}
                     >
                       <selectedStop.Icon size={20} color={selectedStop.color} />
                     </div>
 
                     <div style={{ minWidth: 0 }}>
-                      <p style={{ ...bodyText('var(--text)', 15), fontWeight: 700 }}>
+                      <p style={{ ...bodyText('var(--text)', 8), fontWeight: 700 }}>
                         {selectedStopResolved?.placesName || selectedStop.place}
                       </p>
                       {selectedStopResolved?.placesAddress ? (
-                        <p style={{ ...bodyText('var(--muted)', 12), marginTop: 6 }}>
+                        <p style={{ ...bodyText('var(--muted)', 8), marginTop: 6 }}>
                           {selectedStopResolved.placesAddress}
                         </p>
                       ) : null}
                     </div>
                   </div>
 
-                  <p style={{ ...bodyText('var(--muted)', 13), marginBottom: 14 }}>
+                  <p style={{ ...bodyText('var(--muted)', 8), marginBottom: 14 }}>
                     {selectedStop.challenge}
                   </p>
 
@@ -409,24 +409,24 @@ export default function QuestMap({
                     <div
                       style={{
                         padding: '10px 12px',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg2)',
                       }}
                     >
                       <p style={panelLabel('Duration', 'var(--muted)')}>Duration</p>
-                      <p style={{ ...bodyText('var(--text)', 14), marginTop: 8 }}>
+                      <p style={{ ...bodyText('var(--text)', 8), marginTop: 8 }}>
                         {selectedStop.duration}
                       </p>
                     </div>
                     <div
                       style={{
                         padding: '10px 12px',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        background: 'rgba(255,255,255,0.03)',
+                        border: '1px solid var(--border)',
+                        background: 'var(--bg2)',
                       }}
                     >
                       <p style={panelLabel('Status', 'var(--muted)')}>Status</p>
-                      <p style={{ ...bodyText('var(--text)', 14), marginTop: 8 }}>
+                      <p style={{ ...bodyText('var(--text)', 8), marginTop: 8 }}>
                         {selectedStop.completed
                           ? 'Completed'
                           : proximity?.nearStopId === selectedStop.id && proximity?.atStop
@@ -439,7 +439,7 @@ export default function QuestMap({
                   {proximity?.nearStopId === selectedStop.id &&
                   proximity.meters != null &&
                   !proximity.atStop ? (
-                    <p style={{ ...bodyText('var(--yellow)', 12), marginBottom: 14 }}>
+                    <p style={{ ...bodyText('var(--yellow)', 8), marginBottom: 14 }}>
                       You are about {proximity.meters}m away. Get within {ARRIVAL_RADIUS_METERS}m to check in instantly.
                     </p>
                   ) : null}
@@ -494,7 +494,7 @@ export default function QuestMap({
                 </>
               ) : (
                 <div style={{ marginTop: 12 }}>
-                  <p style={{ ...bodyText('var(--muted)', 13) }}>
+                  <p style={{ ...bodyText('var(--muted)', 8) }}>
                     Tap a stop marker on the map or pick one from the adventure timeline to view the location details and mission prompt.
                   </p>
                 </div>
@@ -524,10 +524,10 @@ export default function QuestMap({
                         textAlign: 'left',
                         padding: '12px 12px',
                         background: selectedNow
-                          ? 'rgba(255,255,255,0.08)'
+                          ? 'var(--bg2)'
                           : active
-                          ? 'rgba(245, 200, 66, 0.12)'
-                          : 'rgba(255,255,255,0.02)',
+                          ? 'var(--bg2)'
+                          : 'var(--bg)',
                         border: `2px solid ${locked ? 'var(--muted)' : stop.color}`,
                         cursor: locked ? 'not-allowed' : 'pointer',
                         opacity: locked ? 0.42 : 1,
@@ -559,10 +559,10 @@ export default function QuestMap({
                         <p style={panelLabel(`Stop ${stop.id}`, locked ? 'var(--muted)' : stop.color)}>
                           Stop {stop.id}
                         </p>
-                        <p style={{ ...bodyText('var(--text)', 14), marginTop: 6 }}>
+                        <p style={{ ...bodyText('var(--text)', 8), marginTop: 6 }}>
                           {stop.place}
                         </p>
-                        <p style={{ ...bodyText('var(--muted)', 12), marginTop: 6 }}>
+                        <p style={{ ...bodyText('var(--muted)', 8), marginTop: 6 }}>
                           {stop.challenge}
                         </p>
                       </div>
