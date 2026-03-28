@@ -22,15 +22,15 @@ const TREE_POSITIONS = [
   { left: '90%', top: '15%' },
 ];
 
-export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
+export default function QuestMap({ title = 'QUEST MAP', stops: initialStops, onBack, onComplete }) {
   const [stops, setStops] = useState(
     initialStops.map(s => ({ ...s, completed: false }))
   );
   const [selected, setSelected] = useState(null);
 
   const completedCount = stops.filter(s => s.completed).length;
-  const hpPercent = Math.round((completedCount / stops.length) * 100);
-  const allDone = completedCount === stops.length;
+  const hpPercent = stops.length ? Math.round((completedCount / stops.length) * 100) : 0;
+  const allDone = stops.length > 0 && completedCount === stops.length;
 
   useEffect(() => {
     if (allDone) {
@@ -143,7 +143,7 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
                 flex: 1,
               }}
             >
-              QUEST MAP
+              {title.toUpperCase()}
             </span>
             <CheckCircle size={12} color="var(--green)" />
             <span

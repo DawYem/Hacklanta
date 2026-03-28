@@ -6,6 +6,8 @@ import LoadingScreen from './screens/LoadingScreen';
 import QuestMap from './screens/QuestMap';
 import CompleteScreen from './screens/CompleteScreen';
 import { mockQuest } from './data/mockQuest';
+import { generateQuest } from './lib/api';
+import { withStopIcons } from './lib/icons';
 
 function App() {
   const [screen, setScreen] = useState('landing');
@@ -13,6 +15,7 @@ function App() {
   const [time, setTime] = useState(2);
   const [location, setLocation] = useState('');
   const [stops, setStops] = useState([]);
+  const [questTitle, setQuestTitle] = useState('');
 
   const handlePlay = () => setScreen('vibe');
 
@@ -23,8 +26,17 @@ function App() {
     setScreen('loading');
   };
 
-  const handleLoadingDone = () => {
-    setStops(mockQuest.stops);
+  const handleGenerateQuest = async () => {
+    const quest = await generateQuest({ vibe, time, location });
+    return {
+      ...quest,
+      stops: withStopIcons(quest.stops),
+    };
+  };
+
+  const handleLoadingDone = quest => {
+    setQuestTitle(quest?.title || mockQuest.title);
+    setStops(quest?.stops || withStopIcons(mockQuest.stops));
     setScreen('map');
   };
 
@@ -36,6 +48,7 @@ function App() {
     setTime(2);
     setLocation('');
     setStops([]);
+    setQuestTitle('');
   };
 
   return (
@@ -50,9 +63,17 @@ function App() {
           initialLocation={location}
         />
       )}
-      {screen === 'loading' && <LoadingScreen onDone={handleLoadingDone} />}
+      {screen === 'loading' && (
+        <LoadingScreen
+          onBack={() => setScreen('vibe')}
+          onGenerateQuest={handleGenerateQuest}
+          onDone={handleLoadingDone}
+        />
+      )}
       {screen === 'map' && (
         <QuestMap
+          key={`${questTitle}-${location}-${stops.length}`}
+          title={questTitle}
           stops={stops}
           onBack={() => setScreen('vibe')}
           onComplete={handleMapComplete}
