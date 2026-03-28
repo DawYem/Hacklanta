@@ -38,17 +38,21 @@ Quest turns your city into a playground and your mood into a story.
 
 ---
 
-## 🛠️ Tech Stack  
-- **Frontend:** React  
+## 🛠️ Main Tech Stack  
+-**Frontend:** React 19, Vite, Google Maps (@react-google-maps/api)  
+-**Backend:** Node.js, Vercel Serverless Functions  
+-**AI:** Google Gemini 2.0 Flash  
+-**APIs:** Google Maps (JS + Geocoding), BigDataCloud, ipapi.co, OpenWeatherMap  
+-**Deployment:** Vercel (main), Railway (backup) 
 - **Backend:** Node.js  
 - **AI:** Gemini 1.5 Pro (function calling)  
-- **APIs:** Google Places, OpenWeather  
+- **APIs:** Google Places, OpenWeather, JavaScript Maps, 
 - **Output:** Structured JSON adventure plan rendered in UI  
 
 ---
 
 ## 🧠 Ideation & Development Process  
-We started with the question:  
+We asked ourselves:  
 **“How can AI make real life more playful?”**
 
 From there, we designed a simple but powerful loop:  
@@ -72,18 +76,16 @@ Our focus was on delivering a magical core experience rather than feature bloat.
 - Creative micro‑challenges at each stop  
 - Simple, mobile‑friendly UI  
 - Fallback logic for API failures  
-
----
+- Photo uploads for tasks
+- XP system
 
 ## 🔮 Future Roadmap  
 With more time, we would add:  
 - Social quests (friends join your adventure)  
-- XP + leveling system  
 - Safety‑aware routing  
 - Local business partnerships  
 - Daily AI‑crafted missions  
-- Photo journaling + memory tracking  
-
+- 
 ---
 
 ## 📹 Demo Video  
