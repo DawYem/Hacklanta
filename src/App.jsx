@@ -113,7 +113,7 @@ function App() {
         />
       )}
       {screen === 'complete' && (
-        <CompleteScreen onRestart={handleRestart} avatar={avatar} />
+        <CompleteScreen onRestart={handleRestart} avatar={avatar} hours={time} />
       )}
     </ThemeProvider>
   );

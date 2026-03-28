@@ -273,10 +273,6 @@ function formatDuration(index, totalStops, hours) {
   return `${avg + index * 5}m`;
 }
 
-function pickStops(templates, totalStops) {
-  return templates.slice(0, totalStops);
-}
-
 async function fetchWeatherForLocation(locationQuery) {
   const key = process.env.OPENWEATHER_API_KEY?.trim();
   if (!key || !locationQuery?.trim()) return null;
@@ -296,6 +292,11 @@ async function fetchWeatherForLocation(locationQuery) {
   } catch {
     return null;
   }
+}
+
+function pickStops(templates, count) {
+  const shuffled = [...templates].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
 }
 
 function buildQuest({ vibe, time, location, activities }) {

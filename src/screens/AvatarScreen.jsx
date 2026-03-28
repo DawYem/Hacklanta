@@ -142,6 +142,8 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                     fontSize: 9,
                     color: 'var(--text)',
                     margin: '0 0 4px',
+                    wordBreak: 'break-word',
+                    lineHeight: 1.5,
                   }}
                 >
                   {avatar.name}
@@ -154,6 +156,8 @@ export default function AvatarScreen({ onBack, onConfirm }) {
                     fontSize: 7,
                     color: 'var(--muted)',
                     margin: '0 0 10px',
+                    wordBreak: 'break-word',
+                    lineHeight: 1.6,
                   }}
                 >
                   {avatar.desc}

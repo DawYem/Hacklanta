@@ -46,8 +46,10 @@ function bodyText(color = 'var(--text)', size = 10) {
     fontFamily: "'Press Start 2P', monospace",
     fontSize: size,
     color,
-    lineHeight: 1.6,
+    lineHeight: 1.7,
     margin: 0,
+    wordBreak: 'break-word',
+    overflowWrap: 'break-word',
   };
 }
 
@@ -182,7 +184,7 @@ export default function QuestMap({
           zIndex: 2,
           maxWidth: CONTENT_MAX,
           margin: '0 auto',
-          padding: '24px 16px 32px',
+          padding: '16px 12px 32px',
         }}
       >
         <div
@@ -279,7 +281,7 @@ export default function QuestMap({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(190px, 100%), 1fr))',
                 gap: 10,
               }}
             >
@@ -318,7 +320,7 @@ export default function QuestMap({
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))',
             gap: 18,
             alignItems: 'start',
           }}
@@ -379,7 +381,7 @@ export default function QuestMap({
                 padding: '12px 16px 16px',
                 borderTop: '2px solid var(--border)',
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(180px, 100%), 1fr))',
                 gap: 10,
               }}
             >
@@ -415,7 +417,7 @@ export default function QuestMap({
             </div>
           </PixelBox>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18, minWidth: 0 }}>
             <PixelBox color={selectedStop ? selectedStop.color : 'var(--yellow)'}>
               <p style={panelLabel(selectedStop ? `Stop ${selectedStop.id}` : 'Mission Panel', selectedStop ? selectedStop.color : 'var(--yellow)')}>
                 {selectedStop ? `Stop ${selectedStop.id}` : 'Mission Panel'}

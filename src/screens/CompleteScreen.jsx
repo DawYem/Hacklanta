@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Trophy, Zap, Star, Map, Play } from 'lucide-react';
+import { Zap, Star, Map, Play } from 'lucide-react';
 import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
@@ -7,7 +7,90 @@ import PixelBtn from '../components/PixelBtn';
 import PixelAvatar from '../components/PixelAvatar';
 import Confetti from '../components/Confetti';
 
-export default function CompleteScreen({ onRestart, avatar }) {
+// 10 square segments — each represents 0.5h, so 5h max = all filled
+const TOTAL_SEGMENTS = 10;
+
+function ScreenTimeBar({ hours = 2 }) {
+  const target = Math.round(Math.min(Math.max(hours, 0), 5) * 2); // 0–10
+  const [filled, setFilled] = useState(0);
+
+  useEffect(() => {
+    if (target === 0) return;
+    const start = setTimeout(() => {
+      let n = 0;
+      const id = setInterval(() => {
+        n += 1;
+        setFilled(n);
+        if (n >= target) clearInterval(id);
+      }, 160);
+      return () => clearInterval(id);
+    }, 700);
+    return () => clearTimeout(start);
+  }, [target]);
+
+  const done = filled >= target && target > 0;
+
+  return (
+    <PixelBox color="var(--yellow)" style={{ width: '100%', textAlign: 'left' }}>
+      {/* Label */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+        <Zap size={12} color="var(--yellow)" fill="var(--yellow)" />
+        <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: 'var(--yellow)', margin: 0 }}>
+          SCREEN TIME SLAIN
+        </p>
+      </div>
+
+      {/* Lightning bolt + pixel block bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        {/* Bold lightning bolt */}
+        <div style={{ flexShrink: 0, filter: 'drop-shadow(0 0 5px var(--yellow))' }}>
+          <Zap size={34} color="var(--yellow)" fill="var(--yellow)" />
+        </div>
+
+        {/* Pixel bar: thick dark outer border, small gaps between square blocks */}
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'stretch',
+            gap: 3,
+            padding: 4,
+            background: '#111',
+            border: '2px solid #111',
+            boxShadow: '2px 2px 0 #000',
+          }}
+        >
+          {Array.from({ length: TOTAL_SEGMENTS }).map((_, i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: 28,
+                background: i < filled ? 'var(--yellow)' : 'var(--bg2)',
+                boxShadow: i < filled
+                  ? 'inset 0 2px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.35)'
+                  : 'none',
+                transition: 'background 0.08s ease',
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Stats + message */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
+        <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 7, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+          {done ? 'EVERY HOUR OUTSIDE COUNTS!' : 'REAL-WORLD TIME TODAY'}
+        </p>
+        <p style={{ fontFamily: "'Press Start 2P', monospace", fontSize: 8, color: done ? 'var(--green)' : 'var(--yellow)', margin: 0, flexShrink: 0, marginLeft: 8 }}>
+          {(filled / 2).toFixed(1)}/{5}H
+        </p>
+      </div>
+    </PixelBox>
+  );
+}
+
+export default function CompleteScreen({ onRestart, avatar, hours = 2 }) {
   const [blinkOn, setBlinkOn] = useState(true);
 
   useEffect(() => {
@@ -156,6 +239,9 @@ export default function CompleteScreen({ onRestart, avatar }) {
           </p>
         </PixelBox>
 
+        {/* Screen time sword progress bar */}
+        <ScreenTimeBar hours={hours} />
+
         {/* Hero of the day box */}
         {avatar && (
           <PixelBox color={avatar.color} style={{ width: '100%' }}>
@@ -175,6 +261,8 @@ export default function CompleteScreen({ onRestart, avatar }) {
                 fontSize: 10,
                 color: 'var(--text)',
                 margin: 0,
+                wordBreak: 'break-word',
+                lineHeight: 1.7,
               }}
             >
               {avatar.name} — {avatar.desc}

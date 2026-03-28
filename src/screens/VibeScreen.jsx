@@ -171,6 +171,8 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
                         fontSize: 7,
                         color: 'var(--muted)',
                         margin: 0,
+                        lineHeight: 1.6,
+                        wordBreak: 'break-word',
                       }}
                     >
                       {vibe.description}
@@ -288,7 +290,7 @@ export default function VibeScreen({ onBack, onComplete, initialVibe, initialTim
                       border: `2px solid ${activities === n ? 'var(--purple)' : '#444'}`,
                       color: activities === n ? '#fff' : 'var(--muted)',
                       fontFamily: "'Press Start 2P', monospace",
-                      fontSize: 10,
+                      fontSize: 'clamp(8px, 2.5vw, 10px)',
                       cursor: 'pointer',
                       boxShadow: activities === n ? '3px 3px 0 rgba(147,51,234,0.4)' : 'none',
                       transition: 'all 0.15s',
