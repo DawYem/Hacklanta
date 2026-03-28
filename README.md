@@ -126,9 +126,9 @@ Or run two terminals: `npm run server` and `npm run dev`.
 | `VITE_MAPS_PLATFORM_API_KEY` | `.env` (client) | **Required** for the map. Enable Maps JavaScript API, Places API, Geocoding API; set HTTP referrer `http://localhost:5173/*`. |
 | `OPENWEATHER_API_KEY` | `.env` (loaded by the server via `dotenv`) | Optional. If set, the quest response includes **live weather** for the location (shown on the map screen). Get a key at [OpenWeather](https://openweathermap.org/api). |
 | `GEMINI_API_KEY` | `.env` (server only, never `VITE_*`) | Optional. **Google AI Studio [API key](https://aistudio.google.com/apikey)** — not an OAuth “Client ID”. Enables AI-generated quest titles, summaries, and stops; if unset or on error, the server uses template quests. Optional `GEMINI_MODEL` (e.g. `gemini-1.5-flash`) if the default model is unavailable. |
-| `VITE_API_BASE_URL` | `.env` | Optional. Leave empty in dev (Vite proxies `/api` → port 5050). Set in production if the API is on another origin. |
+| `VITE_API_BASE_URL` | **Vercel** (or build env) | **Production:** set to your **Railway public URL** with **no path** and **no trailing slash**, e.g. `https://your-service.up.railway.app`. The browser calls `${VITE_API_BASE_URL}/api/quest`. **Local dev:** leave empty (Vite proxies `/api` → port 5050). |
 
-Restart **Vite** after changing any `VITE_*` variable. Restart the **Node server** (or `npm run dev:all`) after changing `GEMINI_API_KEY`, `GEMINI_MODEL`, or `OPENWEATHER_API_KEY`.
+Restart **Vite** after changing any `VITE_*` variable — on Vercel, **redeploy after changing** `VITE_*` (values are baked in at **build** time). Restart the **Node server** (or `npm run dev:all`) after changing `GEMINI_API_KEY`, `GEMINI_MODEL`, or `OPENWEATHER_API_KEY`.
 
 ### Implementation notes (current build)
 
@@ -140,3 +140,10 @@ Restart **Vite** after changing any `VITE_*` variable. Restart the **Node server
 - **Maps:** Google Maps JavaScript API, Places (text search), Geocoding fallback, Geometry (distance for proximity check-in).  
 - **Weather:** OpenWeather current weather API (optional, server-side).  
 - **Gemini:** Optional; server calls the Generative Language API to build quest JSON; falls back to templates if the key is missing or the request fails.
+
+### Production (Vercel frontend + Railway API)
+
+1. **Railway:** Deploy the Node server (`server/index.js`), set `PORT` automatically, add `GEMINI_API_KEY` / `OPENWEATHER_API_KEY` if you use them. Copy the **public HTTPS** URL (e.g. `https://xxx.up.railway.app`).
+2. **Vercel:** Set `VITE_API_BASE_URL` to that Railway origin **only** (no `/api` suffix). Set `VITE_MAPS_PLATFORM_API_KEY` and add your **Vercel production URL** to the Maps key HTTP referrer allowlist.
+3. **Redeploy Vercel** after any `VITE_*` change so the client bundle picks up the new values.
+4. In the browser **Network** tab, confirm `POST …/api/quest` goes to Railway (not `yoursite.vercel.app` only).
