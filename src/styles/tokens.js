@@ -1,0 +1,26 @@
+export const tokens = {
+  dark: {
+    '--bg': '#0d0d1a',
+    '--bg2': '#1a1a2e',
+    '--yellow': '#f5c842',
+    '--red': '#e8534a',
+    '--green': '#4ade80',
+    '--blue': '#60a5fa',
+    '--purple': '#c084fc',
+    '--text': '#ffffff',
+    '--muted': '#444444',
+    '--border': 'rgba(255,255,255,0.08)',
+  },
+  light: {
+    '--bg': '#f0f0ff',
+    '--bg2': '#e0e0f5',
+    '--yellow': '#d4a017',
+    '--red': '#c0392b',
+    '--green': '#27ae60',
+    '--blue': '#2980b9',
+    '--purple': '#8e44ad',
+    '--text': '#0d0d1a',
+    '--muted': '#999999',
+    '--border': 'rgba(0,0,0,0.1)',
+  },
+};
