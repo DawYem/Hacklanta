@@ -267,10 +267,22 @@ function readBody(req) {
   });
 }
 
-function formatDuration(index, totalStops, hours) {
-  const totalMinutes = Math.max(hours, 1) * 60;
-  const avg = Math.max(20, Math.round(totalMinutes / totalStops / 5) * 5);
-  return `${avg + index * 5}m`;
+function buildDurations(totalStops, hours) {
+  const totalMinutes = Math.max(Number(hours) || 1, 1) * 60;
+  const baseMinutes = Math.floor(totalMinutes / totalStops / 5) * 5;
+  const perStopMinutes = Math.max(baseMinutes, 10);
+  const durations = new Array(totalStops).fill(perStopMinutes);
+  let assigned = perStopMinutes * totalStops;
+  let remaining = Math.max(totalMinutes - assigned, 0);
+  let idx = 0;
+
+  while (remaining >= 5) {
+    durations[idx % totalStops] += 5;
+    remaining -= 5;
+    idx += 1;
+  }
+
+  return durations.map(minutes => `${minutes}m`);
 }
 
 async function fetchWeatherForLocation(locationQuery) {
@@ -299,17 +311,24 @@ function pickStops(templates, count) {
   return shuffled.slice(0, count);
 }
 
+function getStopCount(hours, requestedStops, maxTemplates) {
+  const totalMinutes = Math.max(Number(hours) || 1, 1) * 60;
+  const maxByTime = Math.max(2, Math.floor(totalMinutes / 15));
+  return Math.min(Math.max(Number(requestedStops) || 4, 2), maxTemplates, maxByTime);
+}
+
 function buildQuest({ vibe, time, location, activities }) {
   const config = vibeConfigs[vibe] || vibeConfigs.bored;
   const hours = Number(time) || 2;
-  const totalStops = Math.min(Math.max(Number(activities) || 4, 2), config.templates.length);
+  const totalStops = getStopCount(hours, activities, config.templates.length);
   const area = (location || 'your area').trim();
+  const durations = buildDurations(totalStops, hours);
 
   const stops = pickStops(config.templates, totalStops).map((template, index) => ({
     id: index + 1,
     place: `${template.place} near ${area}`,
     challenge: template.challenge,
-    duration: formatDuration(index, totalStops, hours),
+    duration: durations[index],
     icon: template.icon,
     color: config.color,
   }));
@@ -358,10 +377,7 @@ const server = http.createServer(async (req, res) => {
       const vibeKey = typeof body.vibe === 'string' ? body.vibe : 'bored';
       const hours = Number(body.time) || 2;
       const config = vibeConfigs[vibeKey] || vibeConfigs.bored;
-      const totalStops = Math.min(
-        Math.max(Number(body.activities) || 4, 2),
-        config.templates.length
-      );
+      const totalStops = getStopCount(hours, body.activities, config.templates.length);
 
       const weather = await fetchWeatherForLocation(location);
 
