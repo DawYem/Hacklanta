@@ -93,24 +93,25 @@ With more time, we would add:
 ## 📂 Repository Structure  
 
 ```
-src/          — React app (screens, map, theme, API client)
-server/       — Quest API (`server/index.js`)
-public/       — Static assets
-.env          — Local secrets (gitignored; copy from `.env.example`)
+src/              — React app (screens, map, theme, API client)
+server/index.js   — HTTP API + quest assembly + optional weather
+server/geminiQuest.js — Optional Gemini-generated quest JSON
+public/           — Static assets
+.env              — Local secrets (gitignored; copy from `.env.example`)
 ```
 
 ---
 
 ## Running & configuring this repository
 
-The sections above describe the **product vision** (including a Gemini-based agent). **This repo** currently ships a working end-to-end flow with a **Node** quest generator, **Google Maps / Places / Geocoding** on the client, and **optional OpenWeather** on the server when `OPENWEATHER_API_KEY` is set.
+The sections above describe the **product vision** (including a Gemini-based agent). **This repo** ships a working end-to-end flow with a **Node** quest API, **optional Gemini** for AI-written quests when `GEMINI_API_KEY` is set (otherwise template-based quests), **Google Maps / Places / Geocoding** on the client, and **optional OpenWeather** when `OPENWEATHER_API_KEY` is set.
 
 ### Quick start
 
 ```bash
 npm install
 cp .env.example .env
-# Add VITE_MAPS_PLATFORM_API_KEY and optionally OPENWEATHER_API_KEY — see below
+# Add VITE_MAPS_PLATFORM_API_KEY; optionally OPENWEATHER_API_KEY, GEMINI_API_KEY — see below
 npm run dev:all
 ```
 
@@ -124,18 +125,18 @@ Or run two terminals: `npm run server` and `npm run dev`.
 |----------|--------|---------|
 | `VITE_MAPS_PLATFORM_API_KEY` | `.env` (client) | **Required** for the map. Enable Maps JavaScript API, Places API, Geocoding API; set HTTP referrer `http://localhost:5173/*`. |
 | `OPENWEATHER_API_KEY` | `.env` (loaded by the server via `dotenv`) | Optional. If set, the quest response includes **live weather** for the location (shown on the map screen). Get a key at [OpenWeather](https://openweathermap.org/api). |
+| `GEMINI_API_KEY` | `.env` (server only, never `VITE_*`) | Optional. **Google AI Studio [API key](https://aistudio.google.com/apikey)** — not an OAuth “Client ID”. Enables AI-generated quest titles, summaries, and stops; if unset or on error, the server uses template quests. Optional `GEMINI_MODEL` (e.g. `gemini-1.5-flash`) if the default model is unavailable. |
 | `VITE_API_BASE_URL` | `.env` | Optional. Leave empty in dev (Vite proxies `/api` → port 5050). Set in production if the API is on another origin. |
 
-Restart Vite after changing any `VITE_*` variable.
+Restart **Vite** after changing any `VITE_*` variable. Restart the **Node server** (or `npm run dev:all`) after changing `GEMINI_API_KEY`, `GEMINI_MODEL`, or `OPENWEATHER_API_KEY`.
 
 ### Implementation notes (current build)
 
-1. **Landing** → **Vibe** (mood + time + location).  
-2. **Loading** — the Node server builds a quest from your inputs.  
+1. **Landing** → **Avatar** (pick character) → **Vibe** (mood + time + location).  
+2. **Loading** — the Node server builds a quest from your inputs (templates, or **Gemini** JSON when `GEMINI_API_KEY` is set).  
 3. **Quest map** — Google Maps shows real places; GPS can highlight when you’re near the next stop; **Navigate** opens Google Maps directions.  
 4. **Complete** — finish all stops to finish the run.
 
 - **Maps:** Google Maps JavaScript API, Places (text search), Geocoding fallback, Geometry (distance for proximity check-in).  
 - **Weather:** OpenWeather current weather API (optional, server-side).  
-
-A future iteration can swap or augment the template generator with **Gemini** and richer agent tooling while keeping the same UI flow.
+- **Gemini:** Optional; server calls the Generative Language API to build quest JSON; falls back to templates if the key is missing or the request fails.

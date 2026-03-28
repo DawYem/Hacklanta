@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import http from 'node:http';
+import { generateQuestWithGemini } from './geminiQuest.js';
 
 const PORT = Number(globalThis.process?.env.PORT) || 5050;
 
@@ -324,13 +325,30 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      const quest = buildQuest({
-        vibe: typeof body.vibe === 'string' ? body.vibe : 'bored',
-        time: body.time,
-        location,
-      });
+      const vibeKey = typeof body.vibe === 'string' ? body.vibe : 'bored';
+      const hours = Number(body.time) || 2;
+      const config = vibeConfigs[vibeKey] || vibeConfigs.bored;
+      const totalStops = getStopCount(hours);
 
       const weather = await fetchWeatherForLocation(location);
+
+      const aiQuest = await generateQuestWithGemini({
+        vibe: vibeKey,
+        time: hours,
+        location,
+        weather,
+        totalStops,
+        themeColor: config.color,
+        vibeTitleHint: config.title,
+      });
+
+      const quest =
+        aiQuest ??
+        buildQuest({
+          vibe: vibeKey,
+          time: body.time,
+          location,
+        });
 
       sendJson(res, 200, { quest: { ...quest, weather } });
     } catch (error) {
@@ -346,4 +364,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`Quest backend listening on http://localhost:${PORT}`);
+  if (process.env.GEMINI_API_KEY?.trim()) {
+    console.log('Gemini quest generation enabled (GEMINI_API_KEY set).');
+  }
 });
