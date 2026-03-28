@@ -3,6 +3,7 @@ import { Compass, Wind, Map, Swords, Flag } from 'lucide-react';
 import Stars from '../components/Stars';
 import PixelBox from '../components/PixelBox';
 import PixelBtn from '../components/PixelBtn';
+import PixelAvatar from '../components/PixelAvatar';
 
 const steps = [
   { Icon: Wind, label: 'SCANNING WEATHER...' },
@@ -15,7 +16,7 @@ function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-export default function LoadingScreen({ onBack, onDone, onGenerateQuest }) {
+export default function LoadingScreen({ onBack, onDone, onGenerateQuest, avatar }) {
   const [activeStep, setActiveStep] = useState(0);
   const [dots, setDots] = useState('...');
   const [error, setError] = useState('');
@@ -86,6 +87,10 @@ export default function LoadingScreen({ onBack, onDone, onGenerateQuest }) {
     >
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes bob {
+          from { transform: translateY(0); }
+          to   { transform: translateY(-6px); }
+        }
       `}</style>
       <Stars />
 
@@ -101,13 +106,26 @@ export default function LoadingScreen({ onBack, onDone, onGenerateQuest }) {
           width: '100%',
         }}
       >
-        <div
-          style={{
-            animation: 'spin 2s linear infinite',
-            filter: 'drop-shadow(0 0 12px var(--yellow))',
-          }}
-        >
-          <Compass size={56} color="var(--yellow)" />
+        {/* Compass + avatar side by side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <div
+            style={{
+              animation: 'spin 2s linear infinite',
+              filter: 'drop-shadow(0 0 12px var(--yellow))',
+            }}
+          >
+            <Compass size={56} color="var(--yellow)" />
+          </div>
+          {avatar && (
+            <div
+              style={{
+                animation: 'bob 0.8s ease-in-out infinite alternate',
+                filter: `drop-shadow(0 0 8px ${avatar.color})`,
+              }}
+            >
+              <PixelAvatar grid={avatar.grid} pixelSize={5} />
+            </div>
+          )}
         </div>
 
         <PixelBox color="var(--yellow)" style={{ width: '100%', textAlign: 'center' }}>
