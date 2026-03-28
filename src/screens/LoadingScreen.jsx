@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Compass, Wind, Map, Swords, Flag } from 'lucide-react';
 import Stars from '../components/Stars';
 import PixelBox from '../components/PixelBox';
+import PixelBtn from '../components/PixelBtn';
 import PixelAvatar from '../components/PixelAvatar';
 
 const steps = [
@@ -11,9 +12,15 @@ const steps = [
   { Icon: Flag, label: 'QUEST READY!' },
 ];
 
-export default function LoadingScreen({ onDone, avatar }) {
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export default function LoadingScreen({ onBack, onDone, onGenerateQuest, avatar }) {
   const [activeStep, setActiveStep] = useState(0);
   const [dots, setDots] = useState('...');
+  const [error, setError] = useState('');
+  const [isRetrying, setIsRetrying] = useState(false);
 
   useEffect(() => {
     const dotId = setInterval(() => {
@@ -29,14 +36,40 @@ export default function LoadingScreen({ onDone, avatar }) {
       }
     }, 750);
 
-    const doneId = setTimeout(onDone, 3200);
-
     return () => {
       clearInterval(dotId);
       clearInterval(stepId);
-      clearTimeout(doneId);
     };
-  }, [onDone]);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function runQuestLoad() {
+      try {
+        setError('');
+        const [quest] = await Promise.all([onGenerateQuest(), delay(3200)]);
+
+        if (!cancelled) {
+          onDone(quest);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Failed to generate quest.');
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRetrying(false);
+        }
+      }
+    }
+
+    runQuestLoad();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [onDone, onGenerateQuest, isRetrying]);
 
   return (
     <div
@@ -104,7 +137,7 @@ export default function LoadingScreen({ onDone, avatar }) {
               margin: '0 0 4px',
             }}
           >
-            GEMINI IS THINKING
+            BUILDING YOUR QUEST
           </p>
           <p
             style={{
@@ -150,6 +183,38 @@ export default function LoadingScreen({ onDone, avatar }) {
             );
           })}
         </div>
+
+        {error ? (
+          <PixelBox color="var(--red)" style={{ width: '100%' }}>
+            <p
+              style={{
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: 8,
+                color: 'var(--red)',
+                margin: '0 0 10px',
+                lineHeight: 1.8,
+              }}
+            >
+              {error}
+            </p>
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <PixelBtn
+                color="var(--red)"
+                onClick={() => setIsRetrying(value => !value)}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                RETRY
+              </PixelBtn>
+              <PixelBtn
+                color="var(--blue)"
+                onClick={onBack}
+                style={{ flex: 1, justifyContent: 'center' }}
+              >
+                BACK
+              </PixelBtn>
+            </div>
+          </PixelBox>
+        ) : null}
       </div>
     </div>
   );

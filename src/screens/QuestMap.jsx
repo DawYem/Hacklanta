@@ -5,6 +5,7 @@ import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
 import PixelBtn from '../components/PixelBtn';
 import PixelAvatar from '../components/PixelAvatar';
+import QuestGoogleMap from '../components/QuestGoogleMap';
 
 // Node positions as percentages [x, y]
 const NODE_POSITIONS = [
@@ -23,15 +24,15 @@ const TREE_POSITIONS = [
   { left: '90%', top: '15%' },
 ];
 
-export default function QuestMap({ stops: initialStops, onBack, onComplete, avatar }) {
+export default function QuestMap({ title = 'QUEST MAP', stops: initialStops, onBack, onComplete, avatar }) {
   const [stops, setStops] = useState(
     initialStops.map(s => ({ ...s, completed: false }))
   );
   const [selected, setSelected] = useState(null);
 
   const completedCount = stops.filter(s => s.completed).length;
-  const hpPercent = Math.round((completedCount / stops.length) * 100);
-  const allDone = completedCount === stops.length;
+  const hpPercent = stops.length ? Math.round((completedCount / stops.length) * 100) : 0;
+  const allDone = stops.length > 0 && completedCount === stops.length;
 
   useEffect(() => {
     if (allDone) {
@@ -53,6 +54,12 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete, avat
     const isLocked = idx > firstIncompleteIdx && firstIncompleteIdx !== -1;
     if (isLocked) return;
     setSelected(selected === stop.id ? null : stop.id);
+  };
+
+  const handleMarkerSelect = id => {
+    const idx = stops.findIndex(s => s.id === id);
+    if (idx === -1) return;
+    handleNodeClick(stops[idx], idx);
   };
 
   return (
@@ -152,7 +159,7 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete, avat
                 flex: 1,
               }}
             >
-              QUEST MAP
+              {title.toUpperCase()}
             </span>
             <CheckCircle size={12} color="var(--green)" />
             <span
@@ -217,6 +224,15 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete, avat
           minHeight: 520,
         }}
       >
+        <div style={{ marginBottom: 16 }}>
+          <QuestGoogleMap
+            stops={stops}
+            selected={selected}
+            onMarkerSelect={handleMarkerSelect}
+            firstIncompleteIdx={firstIncompleteIdx}
+          />
+        </div>
+
         {/* SVG paths */}
         <svg
           style={{

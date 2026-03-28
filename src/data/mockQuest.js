@@ -55,6 +55,8 @@ export const mockQuest = {
       duration: '30m',
       Icon: Coffee,
       color: '#e8534a',
+      lat: 33.7812,
+      lng: -84.3834,
     },
     {
       id: 2,
@@ -63,6 +65,8 @@ export const mockQuest = {
       duration: '45m',
       Icon: TreePine,
       color: '#4ade80',
+      lat: 33.7865,
+      lng: -84.3732,
     },
     {
       id: 3,
@@ -71,6 +75,8 @@ export const mockQuest = {
       duration: '20m',
       Icon: BookOpen,
       color: '#c084fc',
+      lat: 33.7614,
+      lng: -84.3605,
     },
     {
       id: 4,
@@ -79,6 +85,8 @@ export const mockQuest = {
       duration: '40m',
       Icon: Utensils,
       color: '#60a5fa',
+      lat: 33.7726,
+      lng: -84.3654,
     },
   ],
 };
