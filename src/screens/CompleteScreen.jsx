@@ -59,7 +59,7 @@ function playVictoryFanfare() {
   }
 }
 
-function ScreenTimeBar({ hours = 2 }) {
+function ScreenTimeBar({ hours = 2, onBarFull }) {
   const target = Math.round(Math.min(Math.max(hours, 0), 5) * 2); // 0–10
   const [filled, setFilled] = useState(0);
   const [fanfarePlayed, setFanfarePlayed] = useState(false);
@@ -78,30 +78,19 @@ function ScreenTimeBar({ hours = 2 }) {
     return () => clearTimeout(start);
   }, [target]);
 
-  // Fire fanfare exactly once when bar finishes filling
+  // Fire fanfare + notify parent exactly once when bar finishes filling
   useEffect(() => {
     if (filled >= target && target > 0 && !fanfarePlayed) {
       setFanfarePlayed(true);
       playVictoryFanfare();
+      onBarFull?.();
     }
-  }, [filled, target, fanfarePlayed]);
+  }, [filled, target, fanfarePlayed, onBarFull]);
 
   const done = filled >= target && target > 0;
 
   return (
-    <PixelBox color="var(--yellow)" style={{ width: '100%', textAlign: 'left', position: 'relative', overflow: 'hidden' }}>
-      <style>{`
-        @keyframes popIn {
-          0%   { opacity: 0; transform: scale(0.88); }
-          65%  { transform: scale(1.03); }
-          100% { opacity: 1; transform: scale(1); }
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.6; }
-        }
-      `}</style>
-
+    <PixelBox color="var(--yellow)" style={{ width: '100%', textAlign: 'left' }}>
       {/* Label */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
         <Zap size={12} color="var(--yellow)" fill="var(--yellow)" />
@@ -152,66 +141,13 @@ function ScreenTimeBar({ hours = 2 }) {
           {(filled / 2).toFixed(1)}/{5}H
         </p>
       </div>
-
-      {/* Thank-you popup — overlays the card when bar is full */}
-      {done && (
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'var(--bg)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 14,
-          padding: '20px 18px',
-          animation: 'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards',
-          textAlign: 'center',
-          borderTop: '4px solid var(--green)',
-        }}>
-          {/* Pulsing stars row */}
-          <div style={{ display: 'flex', gap: 10, animation: 'pulse 1.6s ease-in-out infinite' }}>
-            <Star size={18} color="var(--yellow)" fill="var(--yellow)" />
-            <Star size={22} color="var(--yellow)" fill="var(--yellow)" />
-            <Star size={18} color="var(--yellow)" fill="var(--yellow)" />
-          </div>
-
-          <p style={{
-            fontFamily: "'Press Start 2P', monospace",
-            fontSize: 13,
-            color: 'var(--green)',
-            margin: 0,
-            lineHeight: 1.4,
-            textShadow: '2px 2px 0 rgba(0,0,0,0.4)',
-          }}>
-            THANK YOU,<br />HERO!
-          </p>
-
-          <p style={{
-            fontFamily: "'Press Start 2P', monospace",
-            fontSize: 7,
-            color: 'var(--text)',
-            margin: 0,
-            lineHeight: 2,
-            wordBreak: 'break-word',
-            maxWidth: 320,
-          }}>
-            Every hour you spend outside instead of on a screen helps fight the teen screen time crisis. You made a real difference today!
-          </p>
-
-          <div style={{ display: 'flex', gap: 10, animation: 'pulse 1.6s ease-in-out infinite' }}>
-            <Zap size={16} color="var(--yellow)" fill="var(--yellow)" />
-            <Zap size={16} color="var(--yellow)" fill="var(--yellow)" />
-            <Zap size={16} color="var(--yellow)" fill="var(--yellow)" />
-          </div>
-        </div>
-      )}
     </PixelBox>
   );
 }
 
 export default function CompleteScreen({ onRestart, avatar, hours = 2 }) {
   const [blinkOn, setBlinkOn] = useState(true);
+  const [showThankYou, setShowThankYou] = useState(false);
 
   useEffect(() => {
     const id = setInterval(() => setBlinkOn(v => !v), 500);
@@ -248,6 +184,19 @@ export default function CompleteScreen({ onRestart, avatar, hours = 2 }) {
         @keyframes bob {
           from { transform: translateY(0); }
           to   { transform: translateY(-6px); }
+        }
+        @keyframes popIn {
+          0%  { opacity: 0; transform: scale(0.85); }
+          65% { transform: scale(1.04); }
+          100%{ opacity: 1; transform: scale(1); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50%       { opacity: 0.55; }
+        }
+        @keyframes fadeInBackdrop {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
       <Stars />
@@ -359,8 +308,8 @@ export default function CompleteScreen({ onRestart, avatar, hours = 2 }) {
           </p>
         </PixelBox>
 
-        {/* Screen time sword progress bar */}
-        <ScreenTimeBar hours={hours} />
+        {/* Screen time progress bar — triggers thank-you popup when full */}
+        <ScreenTimeBar hours={hours} onBarFull={() => setShowThankYou(true)} />
 
         {/* Hero of the day box */}
         {avatar && (
@@ -414,6 +363,85 @@ export default function CompleteScreen({ onRestart, avatar, hours = 2 }) {
           PRESS ANY KEY TO CONTINUE
         </p>
       </div>
+
+      {/* Full-screen thank-you modal — click anywhere to dismiss */}
+      {showThankYou && (
+        <div
+          onClick={() => setShowThankYou(false)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 1000,
+            background: 'rgba(0,0,0,0.75)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px 20px',
+            animation: 'fadeInBackdrop 0.25s ease forwards',
+            cursor: 'pointer',
+          }}
+        >
+          <div style={{
+            background: 'var(--bg)',
+            border: '4px solid var(--green)',
+            boxShadow: '6px 6px 0 var(--green), 0 0 40px rgba(74,222,128,0.25)',
+            padding: '32px 28px',
+            maxWidth: 400,
+            width: '100%',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 20,
+            animation: 'popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards',
+          }}>
+            {/* Pulsing stars */}
+            <div style={{ display: 'flex', gap: 12, animation: 'pulse 1.8s ease-in-out infinite' }}>
+              <Star size={20} color="var(--yellow)" fill="var(--yellow)" />
+              <Star size={26} color="var(--yellow)" fill="var(--yellow)" />
+              <Star size={20} color="var(--yellow)" fill="var(--yellow)" />
+            </div>
+
+            <p style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 'clamp(14px, 4vw, 20px)',
+              color: 'var(--green)',
+              margin: 0,
+              lineHeight: 1.5,
+              textShadow: '3px 3px 0 rgba(0,0,0,0.4)',
+            }}>
+              THANK YOU,<br />HERO!
+            </p>
+
+            <p style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 8,
+              color: 'var(--text)',
+              margin: 0,
+              lineHeight: 2.1,
+              wordBreak: 'break-word',
+            }}>
+              Every hour you spend outside instead of on a screen helps fight the teen screen time crisis. You made a real difference today. Keep questing!
+            </p>
+
+            {/* Pulsing zaps */}
+            <div style={{ display: 'flex', gap: 12, animation: 'pulse 1.8s ease-in-out infinite' }}>
+              <Zap size={18} color="var(--yellow)" fill="var(--yellow)" />
+              <Zap size={18} color="var(--yellow)" fill="var(--yellow)" />
+              <Zap size={18} color="var(--yellow)" fill="var(--yellow)" />
+            </div>
+
+            <p style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 7,
+              color: 'var(--muted)',
+              margin: 0,
+            }}>
+              TAP ANYWHERE TO CLOSE
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
