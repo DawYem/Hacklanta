@@ -4,9 +4,10 @@ import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
 import PixelBtn from '../components/PixelBtn';
+import PixelAvatar from '../components/PixelAvatar';
 import Confetti from '../components/Confetti';
 
-export default function CompleteScreen({ onRestart }) {
+export default function CompleteScreen({ onRestart, avatar }) {
   const [blinkOn, setBlinkOn] = useState(true);
 
   useEffect(() => {
@@ -34,6 +35,10 @@ export default function CompleteScreen({ onRestart }) {
           96%{opacity:0.6}
           97%{opacity:1}
           98%{opacity:0.4}
+        }
+        @keyframes bob {
+          from { transform: translateY(0); }
+          to   { transform: translateY(-6px); }
         }
       `}</style>
       <Stars />
@@ -67,9 +72,28 @@ export default function CompleteScreen({ onRestart }) {
           QUEST<br />COMPLETE!
         </h1>
 
-        <div style={{ filter: 'drop-shadow(0 0 20px var(--yellow))' }}>
-          <Trophy size={64} color="var(--yellow)" fill="var(--yellow)" />
-        </div>
+        {/* Avatar between title and rewards */}
+        {avatar && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 16,
+            }}
+          >
+            <Star size={20} color="var(--yellow)" fill="var(--yellow)" />
+            <div
+              style={{
+                animation: 'bob 0.8s ease-in-out infinite alternate',
+                filter: `drop-shadow(0 0 12px ${avatar.color})`,
+              }}
+            >
+              <PixelAvatar grid={avatar.grid} pixelSize={7} />
+            </div>
+            <Star size={20} color="var(--yellow)" fill="var(--yellow)" />
+          </div>
+        )}
 
         <PixelBox color="var(--green)" style={{ width: '100%' }}>
           <p
@@ -125,6 +149,32 @@ export default function CompleteScreen({ onRestart }) {
             URBAN EXPLORER I
           </p>
         </PixelBox>
+
+        {/* Hero of the day box */}
+        {avatar && (
+          <PixelBox color={avatar.color} style={{ width: '100%' }}>
+            <p
+              style={{
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: 8,
+                color: avatar.color,
+                margin: '0 0 8px',
+              }}
+            >
+              HERO OF THE DAY
+            </p>
+            <p
+              style={{
+                fontFamily: "'Press Start 2P', monospace",
+                fontSize: 10,
+                color: 'var(--text)',
+                margin: 0,
+              }}
+            >
+              {avatar.name} — {avatar.desc}
+            </p>
+          </PixelBox>
+        )}
 
         <PixelBtn
           color="var(--yellow)"

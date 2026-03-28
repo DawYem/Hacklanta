@@ -4,6 +4,7 @@ import Stars from '../components/Stars';
 import ThemeToggle from '../components/ThemeToggle';
 import PixelBox from '../components/PixelBox';
 import PixelBtn from '../components/PixelBtn';
+import PixelAvatar from '../components/PixelAvatar';
 
 // Node positions as percentages [x, y]
 const NODE_POSITIONS = [
@@ -22,7 +23,7 @@ const TREE_POSITIONS = [
   { left: '90%', top: '15%' },
 ];
 
-export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
+export default function QuestMap({ stops: initialStops, onBack, onComplete, avatar }) {
   const [stops, setStops] = useState(
     initialStops.map(s => ({ ...s, completed: false }))
   );
@@ -67,6 +68,14 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
         @keyframes ping {
           0%, 100% { transform: scale(1); opacity: 0.6; }
           50% { transform: scale(1.4); opacity: 0; }
+        }
+        @keyframes bob {
+          from { transform: translateY(0); }
+          to   { transform: translateY(-6px); }
+        }
+        @keyframes bobCentered {
+          from { transform: translateX(-50%) translateY(0); }
+          to   { transform: translateX(-50%) translateY(-6px); }
         }
       `}</style>
       <Stars />
@@ -155,6 +164,18 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
             >
               {completedCount}/{stops.length}
             </span>
+            {/* Avatar in header */}
+            {avatar && (
+              <div
+                style={{
+                  filter: `drop-shadow(0 0 4px ${avatar.color})`,
+                  marginLeft: 4,
+                  flexShrink: 0,
+                }}
+              >
+                <PixelAvatar grid={avatar.grid} pixelSize={2} />
+              </div>
+            )}
           </PixelBox>
         </div>
 
@@ -309,6 +330,23 @@ export default function QuestMap({ stops: initialStops, onBack, onComplete }) {
                 transform: 'translate(-50%, -50%)',
               }}
             >
+              {/* Avatar floating above active node */}
+              {isActive && avatar && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    bottom: 'calc(100% + 6px)',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    animation: 'bobCentered 0.8s ease-in-out infinite alternate',
+                    filter: `drop-shadow(0 0 6px ${avatar.color})`,
+                    zIndex: 5,
+                  }}
+                >
+                  <PixelAvatar grid={avatar.grid} pixelSize={3} />
+                </div>
+              )}
+
               {/* Ping ring for active node */}
               {isActive && (
                 <div
